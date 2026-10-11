@@ -7,6 +7,7 @@ Rukh course assistants inside the [Edifice](https://edifice.io) ENT. Teachers cr
 - `docs/RESOURCES.md` — legal constraints (cadre d'usage, GDPR, CNIL, AI Act), how Rukh meets them, and resources
 - `docs/INTEGRATION_GUIDELINES.md` — registering the connector with an ENT, its env vars, and how ENT profiles map to roles and how to change that
 - `docs/TEMPLATING.md` — existing Edifice starters, the generic parts of an ENT connector, and the shape of a reusable template
+- `docs/TARGET_WORKFLOWS.md` — how students and teachers will reach Rukh ENT from the ENT, an LLM connector, a custom frontend and a future mobile app, with links to the issues tracking each step
 
 ## Install
 
