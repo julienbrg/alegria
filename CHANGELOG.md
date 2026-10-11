@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `docs/RESOURCES.md`: GAR requirements for resource providers from the GAR contract (v2026), with Rukh ENT's answer or what is missing for each, and links to the GAR documentation
 - `next` parameter on `/auth/login`: a same-origin path to land on after login
 - README section on connecting an MCP client
+- `docs/TARGET_WORKFLOWS.md`: the three target ways in, from the ENT, an LLM connector (Claude, Le Chat, ChatGPT) and a custom frontend, step by step for students and teachers, with expiry, data flow, a comparison table, a possible future mobile app, open design points and links to the tracking issues; linked from the README
 
 ### Changed
 
