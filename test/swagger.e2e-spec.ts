@@ -45,6 +45,7 @@ describe('Swagger enabled', () => {
       ),
     );
     expect(access.sort()).toEqual([
+      'DELETE /ask/conversation/{context} session',
       'DELETE /context/{name} session',
       'GET /auth/callback public',
       'GET /auth/login public',
