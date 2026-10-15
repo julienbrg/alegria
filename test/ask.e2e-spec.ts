@@ -197,6 +197,18 @@ describe('Ask', () => {
     expect(sessionId).not.toBe('someone-else');
   });
 
+  it('keeps one session per user and assistant', async () => {
+    await ask('student', { context: visible, message: 'hi' }).expect(201);
+    await ask('student', { context: visible, message: 'again' }).expect(201);
+    await ask('teacher', { context: visible, message: 'hi' }).expect(201);
+
+    const [student, again, teacher] = anthropicAsk.mock.calls.map(
+      ([, sessionId]) => sessionId,
+    );
+    expect(again).toBe(student);
+    expect(teacher).not.toBe(student);
+  });
+
   it('always sends instruction-file.md', async () => {
     writeDocuments(visible, {
       'instruction-file.md': 'Réponds en français.',
