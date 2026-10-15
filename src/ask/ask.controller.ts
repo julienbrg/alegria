@@ -2,6 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
+  HttpCode,
+  Param,
   Post,
   Res,
 } from '@nestjs/common';
@@ -72,6 +75,19 @@ export class AskController {
       return this.askService.ask(request);
     }
     return this.streamAsk(request, res);
+  }
+
+  @Delete('conversation/:context')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Start a new conversation with an assistant' })
+  @ApiResponse({ status: 204, description: 'The next ask starts afresh' })
+  @ApiResponse({ status: 404, description: 'Unknown or hidden assistant' })
+  resetConversation(
+    @CurrentUser() user: EntUser,
+    @Param('context') context: string,
+  ): void {
+    const assistant = this.assistants.get(user, context);
+    this.conversations.reset(user.userId, assistant.name);
   }
 
   /**
