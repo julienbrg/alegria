@@ -52,6 +52,7 @@ describe('Swagger enabled', () => {
       'GET /context/{name} session',
       'GET /me session',
       'PATCH /context/{name} session',
+      'POST /ask session',
       'POST /auth/logout public',
       'POST /context session',
       'POST /mcp bearer',
