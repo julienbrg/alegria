@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AssistantsModule } from '../assistants/assistants.module';
+import { EntModule } from '../ent/ent.module';
 import { CostTracker } from '../memory/cost-tracking.service';
 import { ProvidersModule } from '../providers/providers.module';
 import { RagModule } from '../rag/rag.module';
@@ -11,7 +12,7 @@ import { AskStreamService } from './ask-stream.service';
 import { ContextLoaderService } from './context-loader.service';
 
 @Module({
-  imports: [AssistantsModule, ProvidersModule, RagModule],
+  imports: [AssistantsModule, EntModule, ProvidersModule, RagModule],
   controllers: [AskController],
   providers: [
     AskService,

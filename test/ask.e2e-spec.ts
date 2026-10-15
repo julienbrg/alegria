@@ -197,6 +197,49 @@ describe('Ask', () => {
     expect(sessionId).not.toBe('someone-else');
   });
 
+  it('keeps one session per user and assistant', async () => {
+    await ask('student', { context: visible, message: 'hi' }).expect(201);
+    await ask('student', { context: visible, message: 'again' }).expect(201);
+    await ask('teacher', { context: visible, message: 'hi' }).expect(201);
+
+    const [student, again, teacher] = anthropicAsk.mock.calls.map(
+      ([, sessionId]) => sessionId,
+    );
+    expect(again).toBe(student);
+    expect(teacher).not.toBe(student);
+  });
+
+  describe('DELETE /ask/conversation/:context', () => {
+    const reset = (profile: string | null, name: string) => {
+      const req = request(e2e.server)
+        .delete(`/ask/conversation/${name}`)
+        .set('Origin', e2e.origin);
+      if (profile) req.set('Cookie', jars[profile].header());
+      return req;
+    };
+
+    it('returns 401 without a session', async () => {
+      await reset(null, visible).expect(401);
+    });
+
+    it('returns 404 for a hidden assistant', async () => {
+      await reset('student', hidden).expect(404);
+    });
+
+    it('starts a new conversation for the caller only', async () => {
+      await ask('student', { context: visible, message: 'hi' }).expect(201);
+      await ask('teacher', { context: visible, message: 'hi' }).expect(201);
+      await reset('student', visible).expect(204);
+      await ask('student', { context: visible, message: 'hi' }).expect(201);
+      await ask('teacher', { context: visible, message: 'hi' }).expect(201);
+
+      const [student, teacher, studentAfter, teacherAfter] =
+        anthropicAsk.mock.calls.map(([, sessionId]) => sessionId);
+      expect(studentAfter).not.toBe(student);
+      expect(teacherAfter).toBe(teacher);
+    });
+  });
+
   it('always sends instruction-file.md', async () => {
     writeDocuments(visible, {
       'instruction-file.md': 'Réponds en français.',

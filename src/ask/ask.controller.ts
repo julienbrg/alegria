@@ -2,15 +2,18 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
+  HttpCode,
+  Param,
   Post,
   Res,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { randomUUID } from 'crypto';
 import type { Response } from 'express';
 import { AssistantsService } from '../assistants/assistants.service';
 import { allowedModels } from '../config/allowed-models';
+import { ConversationService } from '../ent/conversation.service';
 import { CurrentUser } from '../ent/current-user.decorator';
 import type { EntUser } from '../ent/session.service';
 import { AskDto } from './ask.dto';
@@ -34,6 +37,7 @@ export class AskController {
 
   constructor(
     private readonly assistants: AssistantsService,
+    private readonly conversations: ConversationService,
     private readonly askService: AskService,
     private readonly askStreamService: AskStreamService,
     config: ConfigService,
@@ -64,14 +68,26 @@ export class AskController {
       message: askDto.message,
       context: assistant.name,
       model: assistant.model,
-      // Single-turn until conversations are owned by the server (#54)
-      sessionId: randomUUID(),
+      sessionId: this.conversations.sessionFor(user.userId, assistant.name),
     };
 
     if (!askDto.stream) {
       return this.askService.ask(request);
     }
     return this.streamAsk(request, res);
+  }
+
+  @Delete('conversation/:context')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Start a new conversation with an assistant' })
+  @ApiResponse({ status: 204, description: 'The next ask starts afresh' })
+  @ApiResponse({ status: 404, description: 'Unknown or hidden assistant' })
+  resetConversation(
+    @CurrentUser() user: EntUser,
+    @Param('context') context: string,
+  ): void {
+    const assistant = this.assistants.get(user, context);
+    this.conversations.reset(user.userId, assistant.name);
   }
 
   /**
