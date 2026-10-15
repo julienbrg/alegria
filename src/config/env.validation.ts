@@ -76,6 +76,18 @@ export class EnvironmentVariables {
   @IsString()
   ANTHROPIC_API_KEY?: string;
 
+  @IsOptional()
+  @IsString()
+  ANTHROPIC_EFFORT?: string;
+
+  @IsOptional()
+  @IsString()
+  OPENAI_API_KEY?: string;
+
+  @IsOptional()
+  @IsString()
+  DEEPSEEK_API_KEY?: string;
+
   @IsString()
   @IsNotEmpty()
   DB_PATH: string = 'data/alegria.db';
