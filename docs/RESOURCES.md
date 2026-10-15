@@ -1,4 +1,4 @@
-# Rukh ENT legal constraints and resources
+# Alegria legal constraints and resources
 
 The legal and regulatory constraints a classroom AI assistant must meet in French schools, how Rukh meets each one, and reference resources.
 
@@ -11,13 +11,13 @@ The French Ministry of Education's [cadre d'usage de l'IA en éducation](https:/
 
 On top of that, no student personal data may pass through the assistant ([GDPR](https://eur-lex.europa.eu/eli/reg/2016/679/oj) data minimisation principle). The teacher keeps control of the scope: the AI assists, and replaces neither the teacher's professional judgement nor the student's own intellectual effort.
 
-So Rukh is an assistant with no student account, a scope set by the teacher, and no stored messages. In Rukh ENT, students sign in through the ENT they already use, so they still never create an account.
+So Rukh is an assistant with no student account, a scope set by the teacher, and no stored messages. In Alegria, students sign in through the ENT they already use, so they still never create an account.
 
 ## Requirements
 
 | Requirement | Source | Rukh's answer |
 | --- | --- | --- |
-| No personal student account | Cadre d'usage | Access by link, no student authentication (Rukh ENT: ENT identity only) |
+| No personal student account | Cadre d'usage | Access by link, no student authentication (Alegria: ENT identity only) |
 | Data minimisation, no personal data | GDPR art. 5 | Masking in the browser, raw message never stored |
 | History and model improvement off by default | [CNIL](https://www.cnil.fr/fr/intelligence-artificielle) | Message content is never kept |
 | No transfer outside the EU/EEA | GDPR chapter V | Inference hosted in the EU, whatever model the teacher picks |
@@ -32,12 +32,12 @@ Sources: Cadre d'usage de l'IA en éducation (MENJ, June 2025), CNIL, GDPR, AI A
 
 The [GAR](https://gar.education.fr/) (*Gestionnaire d'accès aux ressources*) is the Ministry of Education's access manager for digital educational resources. It sits between the ENT, which provides identities, and the resource providers, and passes on only the attributes the Ministry has approved for each resource, over [SAML, CAS or OIDC](https://gar.education.fr/wp-content/uploads/2025/04/GAR_RTFS_8.2_Contrat_SSO_FR.pdf).
 
-A GAR adapter is therefore more than an identity option. The provider signs the [contrat d'adhésion](https://gar.education.fr/wp-content/uploads/2026/06/Contrat-GAR_v2026.pdf) (v2026), becomes the Ministry's GDPR processor (*sous-traitant*) and files a compliance declaration (*déclaration de conformité applicative*) for each resource. The table lists what that contract requires and where Rukh ENT stands. "Missing" marks work not yet done or not yet specified.
+A GAR adapter is therefore more than an identity option. The provider signs the [contrat d'adhésion](https://gar.education.fr/wp-content/uploads/2026/06/Contrat-GAR_v2026.pdf) (v2026), becomes the Ministry's GDPR processor (*sous-traitant*) and files a compliance declaration (*déclaration de conformité applicative*) for each resource. The table lists what that contract requires and where Alegria stands. "Missing" marks work not yet done or not yet specified.
 
-| Requirement | Source | Rukh ENT's answer |
+| Requirement | Source | Alegria's answer |
 | --- | --- | --- |
 | A legal entity signs the contract | Annex 2, §3 | Missing: a legal entity to act as publisher |
-| A resource designed for school use, with its own editorial unity and a ScoLOMFR record. Resources that are only services, such as office tools, are excluded | Annex 3, §1.1 | Assistants are built by teachers for their courses, but Rukh ENT itself ships no content. Missing: eligibility to confirm with the GAR team, and a ScoLOMFR record |
+| A resource designed for school use, with its own editorial unity and a ScoLOMFR record. Resources that are only services, such as office tools, are excluded | Annex 3, §1.1 | Assistants are built by teachers for their courses, but Alegria itself ships no content. Missing: eligibility to confirm with the GAR team, and a ScoLOMFR record |
 | Distribute exclusively through the GAR to every school that has it, and only to schools with a subscription, even when free | Art. 3 §15; Annex 2, §3 | Missing: in a GAR school, access must go through the GAR and not through a direct Edifice connector. Subscriptions are not handled |
 | Request only the attributes strictly needed, and justify categories 3 and 4 | Art. 4 §25; Annex 3, §1.3 | Needs the opaque id, school code (UAI) and profile, plus classes (category 3) for visibility. No name or email (category 4) |
 | No new sign-in prompt and no identifier or access code given to users | Annex 3, §1.2 | No account, password or code. Identity comes from the single sign-on only |

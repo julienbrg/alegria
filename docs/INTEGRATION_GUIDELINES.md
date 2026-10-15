@@ -1,12 +1,12 @@
 # Integration guidelines
 
-How to add Rukh ENT to an [Edifice](https://edifice.io/) ENT, how it turns an ENT profile into a role, and how to change that mapping safely.
+How to add Alegria to an [Edifice](https://edifice.io/) ENT, how it turns an ENT profile into a role, and how to change that mapping safely.
 
 ## Integrating with an ENT
 
 ### Register the connector
 
-Rukh ENT is an external connector: the ENT only lists it and vouches for the user (see [TEMPLATING.md](TEMPLATING.md#two-kinds-of-ent-modules)). An ENT administrator declares it in the admin console as an [OAuth 2.0 connector](https://edifice-community.atlassian.net/wiki/x/4YCX8):
+Alegria is an external connector: the ENT only lists it and vouches for the user (see [TEMPLATING.md](TEMPLATING.md#two-kinds-of-ent-modules)). An ENT administrator declares it in the admin console as an [OAuth 2.0 connector](https://edifice-community.atlassian.net/wiki/x/4YCX8):
 
 | Console field | Value |
 | --- | --- |
@@ -16,20 +16,20 @@ Rukh ENT is an external connector: the ENT only lists it and vouches for the use
 | Scope | `userinfo` |
 | Mode | `code` (authorization code grant) |
 
-The connector must be attached to the schools and profiles that should see it. A profile the ENT does not expose the connector to never reaches Rukh ENT; a profile it does expose is still filtered by [the role mapping](#how-roles-are-dispatched).
+The connector must be attached to the schools and profiles that should see it. A profile the ENT does not expose the connector to never reaches Alegria; a profile it does expose is still filtered by [the role mapping](#how-roles-are-dispatched).
 
 ### The OAuth callback
 
 1. `GET /auth/login` sets a `state` cookie and redirects to `ENT_BASE_URL/auth/oauth2/auth`.
 2. The ENT redirects back to `ENT_REDIRECT_URI`, which must be `https://<your domain>/auth/callback`, with `code` and `state`.
-3. Rukh ENT checks `state`, exchanges the code at `/auth/oauth2/token` (HTTP Basic with the client id and secret), reads `/auth/oauth2/userinfo` once, then discards the ENT access token.
-4. It maps the userinfo to a profile and a role, issues the `__Host-rukh` session cookie and redirects to `/`. A refused profile is sent to `/?error=refused`, a bad `state` to `/?error=state`.
+3. Alegria checks `state`, exchanges the code at `/auth/oauth2/token` (HTTP Basic with the client id and secret), reads `/auth/oauth2/userinfo` once, then discards the ENT access token.
+4. It maps the userinfo to a profile and a role, issues the `__Host-alegria` session cookie and redirects to `/`. A refused profile is sent to `/?error=refused`, a bad `state` to `/?error=state`.
 
 The code lives in [`src/ent/ent.controller.ts`](../src/ent/ent.controller.ts) and [`src/ent/ent-oauth.service.ts`](../src/ent/ent-oauth.service.ts).
 
 ### `PUBLIC_ORIGIN`
 
-`PUBLIC_ORIGIN` is the scheme and host users see, such as `https://rukh.example`. Every request other than `GET`, `HEAD` and `OPTIONS` must carry it as its `Origin` header ([`origin.middleware.ts`](../src/ent/origin.middleware.ts)), and the MCP authorization server uses it as its issuer. Behind a reverse proxy, set it to the public URL, not the internal one. It must match the host in `ENT_REDIRECT_URI`, since the session cookie is host-only.
+`PUBLIC_ORIGIN` is the scheme and host users see, such as `https://alegria.example`. Every request other than `GET`, `HEAD` and `OPTIONS` must carry it as its `Origin` header ([`origin.middleware.ts`](../src/ent/origin.middleware.ts)), and the MCP authorization server uses it as its issuer. Behind a reverse proxy, set it to the public URL, not the internal one. It must match the host in `ENT_REDIRECT_URI`, since the session cookie is host-only.
 
 ### Environment variables
 
@@ -47,7 +47,7 @@ The code lives in [`src/ent/ent.controller.ts`](../src/ent/ent.controller.ts) an
 | `SESSION_SECRET` | yes | Signs the session cookie; generate with `openssl rand -base64 48` |
 | `SESSION_IDLE_SECONDS`, `SESSION_MAX_SECONDS` | no | 30-minute sliding idle timeout, 8-hour maximum age |
 | `MISTRAL_API_KEY`, `ANTHROPIC_API_KEY` | per model | Keys for the providers behind `ENT_ALLOWED_MODELS` |
-| `DB_PATH` | no | SQLite file, `data/rukh-ent.db` by default |
+| `DB_PATH` | no | SQLite file, `data/alegria.db` by default |
 | `SWAGGER_ENABLED` | no | Swagger UI at `/api`, unprotected; keep `false` in production |
 | `MCP_ENABLED`, `MCP_ROLES`, `MCP_TOKEN_SECONDS` | no | See [MCP](#mcp_roles) |
 
@@ -59,10 +59,10 @@ With `ENT_MOCK=true`, `/mock-ent` plays the ENT and offers one login per profile
 
 ## How roles are dispatched
 
-Rukh ENT keeps two notions apart, both in [`src/ent/roles.ts`](../src/ent/roles.ts):
+Alegria keeps two notions apart, both in [`src/ent/roles.ts`](../src/ent/roles.ts):
 
 - **Profile**: who the user is in the ENT: `Teacher`, `Personnel`, `Student`, `Parent` or `Super-admin`.
-- **Role**: what the user may do in Rukh ENT: `teacher` (creates and edits assistants) or `user` (uses them).
+- **Role**: what the user may do in Alegria: `teacher` (creates and edits assistants) or `user` (uses them).
 
 ```mermaid
 flowchart LR

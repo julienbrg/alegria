@@ -11,7 +11,7 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const port = config.get<number>('PORT');
   await app.listen(port, '127.0.0.1');
-  logger.log(`Rukh ENT listening on 127.0.0.1:${port}`);
+  logger.log(`Alegria listening on 127.0.0.1:${port}`);
 }
 bootstrap().catch((error) => {
   new Logger('Bootstrap').error('Failed to start the application:', error);

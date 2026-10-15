@@ -18,7 +18,7 @@ import {
 } from './oauth.provider';
 
 const values = {
-  PUBLIC_ORIGIN: 'https://rukh.example.fr',
+  PUBLIC_ORIGIN: 'https://alegria.example.fr',
   SESSION_SECRET: 'unit-session-secret-000000000000000',
   MCP_TOKEN_SECONDS: 3600,
 };
@@ -81,7 +81,10 @@ describe('OAuthProvider', () => {
 
     it('parks the request and sends the user to the ENT login', async () => {
       const provider = setup();
-      const { res, run } = authorize(provider, 'https://rukh.example.fr/mcp');
+      const { res, run } = authorize(
+        provider,
+        'https://alegria.example.fr/mcp',
+      );
       await run;
       expect(res.redirect).toHaveBeenCalledWith(
         `/auth/login?next=${encodeURIComponent(CONSENT_PATH)}`,
@@ -137,12 +140,12 @@ describe('OAuthProvider', () => {
         code,
         undefined,
         'https://client.example/cb',
-        new URL('https://rukh.example.fr/mcp'),
+        new URL('https://alegria.example.fr/mcp'),
       );
       expect(tokens).toMatchObject({ token_type: 'Bearer', expires_in: 3600 });
       const info = await provider.verifyAccessToken(tokens.access_token);
       expect(info.extra.user).toEqual(teacher);
-      expect(info.resource.href).toBe('https://rukh.example.fr/mcp');
+      expect(info.resource.href).toBe('https://alegria.example.fr/mcp');
 
       await expect(
         provider.exchangeAuthorizationCode(

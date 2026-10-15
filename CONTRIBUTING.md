@@ -1,6 +1,6 @@
 # Contributing
 
-How to set up Rukh ENT, run its checks and get a change merged.
+How to set up Alegria, run its checks and get a change merged.
 
 ## Prerequisites
 
@@ -25,14 +25,14 @@ CI runs these on every pull request. Run them before you push:
 | `pnpm check` | Prettier and ESLint. `pnpm format` and `pnpm lint` fix what they can |
 | `pnpm test` | API unit tests |
 | `pnpm test:e2e` | End-to-end tests against the mock ENT |
-| `pnpm --filter rukh-ent-web test` | Web app tests |
+| `pnpm --filter alegria-web test` | Web app tests |
 | `pnpm build` | Typecheck and build the app and the API |
 
 New behavior comes with tests.
 
 ## Issues
 
-Open or pick an issue before you start, so the work is agreed on first. Issues labelled [`good first issue`](https://github.com/julienbrg/rukh-ent/labels/good%20first%20issue) are a good place to start. The order of the current milestone is in the pinned tracking issue, [#15](https://github.com/julienbrg/rukh-ent/issues/15).
+Open or pick an issue before you start, so the work is agreed on first. Issues labelled [`good first issue`](https://github.com/julienbrg/alegria/labels/good%20first%20issue) are a good place to start. The order of the current milestone is in the pinned tracking issue, [#15](https://github.com/julienbrg/alegria/issues/15).
 
 The title starts with an imperative verb: `Add`, `Fix`, `Improve` or `Remove`. The body depends on the kind:
 

@@ -3,7 +3,7 @@ import { EntUser, SessionService } from '../../ent/session.service';
 import { McpTokenService } from './mcp-token.service';
 
 const values = {
-  PUBLIC_ORIGIN: 'https://rukh.example.fr',
+  PUBLIC_ORIGIN: 'https://alegria.example.fr',
   SESSION_SECRET: 'unit-session-secret-000000000000000',
   SESSION_IDLE_SECONDS: 1800,
   SESSION_MAX_SECONDS: 28800,
@@ -28,7 +28,7 @@ describe('McpTokenService', () => {
   afterEach(() => vi.useRealTimers());
 
   it('binds tokens to /mcp', () => {
-    expect(tokens.resource).toBe('https://rukh.example.fr/mcp');
+    expect(tokens.resource).toBe('https://alegria.example.fr/mcp');
   });
 
   it('round-trips the user and client', () => {

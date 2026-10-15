@@ -12,7 +12,7 @@ const PROFILE_BY_TYPE: Record<string, Profile> = {
 const PRECEDENCE: Profile[] = ['Teacher', 'Personnel', 'Student', 'Parent'];
 
 /**
- * Maps an Edifice profile type to a Rukh profile. Super-admin wins over
+ * Maps an Edifice profile type to an Alegria profile. Super-admin wins over
  * any type; guests and unknown profiles get `null` and are refused at login.
  */
 export function profileFromUserinfo(

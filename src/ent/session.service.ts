@@ -4,7 +4,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { CookieOptions } from 'express';
 import { Profile, Role } from './roles';
 
-export const SESSION_COOKIE = '__Host-rukh';
+export const SESSION_COOKIE = '__Host-alegria';
 
 export interface EntUser {
   userId: string;

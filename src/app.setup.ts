@@ -10,7 +10,7 @@ import { APP_VERSION } from './version';
 /** Swagger UI on `/api`, the OpenAPI document on `/api-json`. */
 function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
-    .setTitle('Rukh ENT')
+    .setTitle('Alegria')
     .setVersion(APP_VERSION)
     .addCookieAuth(SESSION_COOKIE, undefined, 'session')
     .addBearerAuth(undefined, 'mcp')

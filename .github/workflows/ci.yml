@@ -31,7 +31,7 @@ jobs:
       - name: End-to-end tests
         run: pnpm test:e2e
       - name: Web tests
-        run: pnpm --filter rukh-ent-web test
+        run: pnpm --filter alegria-web test
       - name: Typecheck and build
         run: pnpm build
 

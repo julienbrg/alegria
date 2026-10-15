@@ -1,11 +1,11 @@
 {
-  "name": "rukh-ent",
+  "name": "alegria",
   "version": "0.1.0",
-  "description": "Rukh course assistants for the Edifice ENT",
+  "description": "Course assistants for the Edifice ENT",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
-    "build": "pnpm --filter rukh-ent-web build && nest build",
+    "build": "pnpm --filter alegria-web build && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"web/src/**/*.{ts,tsx}\" \"web/vite.config.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" \"web/src/**/*.{ts,tsx}\" \"web/vite.config.ts\"",
     "start": "nest start",
@@ -16,7 +16,7 @@
     "check": "pnpm format:check && pnpm lint:check",
     "test": "vitest run --project unit",
     "test:e2e": "vitest run --project e2e",
-    "web:dev": "pnpm --filter rukh-ent-web dev"
+    "web:dev": "pnpm --filter alegria-web dev"
   },
   "packageManager": "pnpm@10.23.0",
   "dependencies": {

@@ -13,7 +13,7 @@ export function Login() {
   return (
     <Container maxW="md" py="16">
       <Stack gap="6">
-        <Heading>Rukh</Heading>
+        <Heading>Alegria</Heading>
         {error && (
           <Alert.Root status="error">
             <Alert.Indicator />

@@ -16,8 +16,8 @@ import { EntOAuthService } from './ent-oauth.service';
 import { Public } from './public.decorator';
 import { EntUser, SESSION_COOKIE, SessionService } from './session.service';
 
-export const STATE_COOKIE = '__Host-rukh-state';
-export const NEXT_COOKIE = '__Host-rukh-next';
+export const STATE_COOKIE = '__Host-alegria-state';
+export const NEXT_COOKIE = '__Host-alegria-next';
 const STATE_MAX_AGE_MS = 10 * 60 * 1000;
 
 /** Same-origin path to land on after login, or `null`. */

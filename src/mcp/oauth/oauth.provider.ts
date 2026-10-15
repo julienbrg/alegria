@@ -28,7 +28,7 @@ import type { EntUser } from '../../ent/session.service';
 import { ClientsStore } from './clients.store';
 import { McpTokenService } from './mcp-token.service';
 
-export const PENDING_COOKIE = '__Host-rukh-mcp-auth';
+export const PENDING_COOKIE = '__Host-alegria-mcp-auth';
 export const CONSENT_PATH = '/oauth/consent';
 const PENDING_TTL_SECONDS = 10 * 60;
 const CODE_TTL_SECONDS = 60;
@@ -60,7 +60,7 @@ function now(): number {
 }
 
 /**
- * Authorization server for MCP clients. Rukh ENT issues its own codes and
+ * Authorization server for MCP clients. Alegria issues its own codes and
  * tokens; who the user is still comes only from the ENT login.
  */
 @Injectable()
@@ -78,7 +78,7 @@ export class OAuthProvider implements OAuthServerProvider {
         'sha256',
         config.get<string>('SESSION_SECRET'),
         '',
-        'rukh-ent mcp pending authorization',
+        'alegria mcp pending authorization',
         32,
       ),
     );

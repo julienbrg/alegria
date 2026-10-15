@@ -1,6 +1,6 @@
 # ENT connector template
 
-How Rukh ENT relates to the starters Edifice already publishes, which of its parts any external ENT connector needs, and how those parts can become a reusable template.
+How Alegria relates to the starters Edifice already publishes, which of its parts any external ENT connector needs, and how those parts can become a reusable template.
 
 ## Two kinds of ENT modules
 
@@ -9,7 +9,7 @@ An application can join an [ENT](https://fr.wikipedia.org/wiki/Espace_num%C3%A9r
 - **Internal module**: runs inside the platform, deployed by the platform operator, built on its framework and frontend libraries.
 - **External connector**: runs on its own server and reaches the ENT through single sign-on. The ENT only lists it and vouches for the user.
 
-Rukh ENT is an external connector. It relies on the ENT for identity alone and keeps its own stack, hosting and release cycle.
+Alegria is an external connector. It relies on the ENT for identity alone and keeps its own stack, hosting and release cycle.
 
 ## Existing starters
 
@@ -29,7 +29,7 @@ Other platforms used by French schools are in the same position: [Skolengo](http
 
 ## Generic parts
 
-Any external connector has to build these. In Rukh ENT they live in their own modules:
+Any external connector has to build these. In Alegria they live in their own modules:
 
 | Piece | Where |
 | --- | --- |
@@ -47,9 +47,9 @@ Any external connector has to build these. In Rukh ENT they live in their own mo
 
 - The `teacher` and `user` roles in `roleFromProfile`: another application may need different rights per profile. [INTEGRATION_GUIDELINES.md](INTEGRATION_GUIDELINES.md#changing-the-mapping) shows how to change them.
 - The features from the [spec](https://julienberanger.com/ent-module-spec): assistants, `/ask`, contexts, visibility by school and class, the model provider layer.
-- The licence: Rukh ENT is [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html).
+- The licence: Alegria is [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html).
 
-A template made from Rukh ENT itself would carry these into every project built from it, so the template belongs in its own repository, with Rukh ENT as one project built on it.
+A template made from Alegria itself would carry these into every project built from it, so the template belongs in its own repository, with Alegria as one project built on it.
 
 ## Template shape
 
@@ -59,10 +59,10 @@ A template made from Rukh ENT itself would carry these into every project built 
 - **Licence**: with no Rukh code inside, the template is free to use a permissive licence such as [MIT](https://choosealicense.com/licenses/mit/).
 - **Updates**: projects pull template changes with a sync step that keeps local changes, as projects built on [genji](https://github.com/w3hc/genji) do.
 
-The split is cheapest while the generic layer is still most of the code. Each feature added to Rukh ENT beforehand makes it harder.
+The split is cheapest while the generic layer is still most of the code. Each feature added to Alegria beforehand makes it harder.
 
 ## Further reading
 
 - [Edifice technical documentation](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/1184923821/Documentation+technique)
 - [OAuth 2.0, RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
-- [Rukh ENT technical specification](https://julienberanger.com/ent-module-spec)
+- [Alegria technical specification](https://julienberanger.com/ent-module-spec)
