@@ -1,5 +1,5 @@
 ---
-title: Rukh ENT: technical specification
+title: Alegria: technical specification
 description: Specification for a fork of Rukh that runs as an ENT connector for French schools, with Edifice OAuth 2.0 as its only authentication, a Vite single-page app served by the API, deployment on an OVHcloud VPS and an optional MCP endpoint.
 date: 2026-10-08
 lang: en-US
@@ -8,11 +8,11 @@ model: Claude Opus 5.5
 source: https://julienberanger.com/ent-module-spec
 ---
 
-# Rukh ENT: technical specification
+# Alegria: technical specification
 
 ## Summary
 
-Rukh ENT is a fork of [Rukh](https://github.com/w3hc/rukh) that a French secondary school adds to its [ENT](https://fr.wikipedia.org/wiki/Espace_num%C3%A9rique_de_travail) (*espace numérique de travail*) as a connector.
+Alegria is a fork of [Rukh](https://github.com/w3hc/rukh) that a French secondary school adds to its [ENT](https://fr.wikipedia.org/wiki/Espace_num%C3%A9rique_de_travail) (*espace numérique de travail*) as a connector.
 
 - Teachers create and edit course assistants: instructions, documents, links, model.
 - Other users (staff, students, parents) chat with the assistants published to their school or class.
@@ -45,7 +45,7 @@ Everything that still needs a live test is listed under [To verify on a test pla
 
 ## What changes from upstream Rukh
 
-| Area | Upstream Rukh | Rukh ENT |
+| Area | Upstream Rukh | Alegria |
 | --- | --- | --- |
 | Access to `POST /ask` | Public | ENT session required, visibility checked |
 | Access to `GET /context` | Public, lists every context | ENT session required, filtered by school and class |
@@ -61,7 +61,7 @@ Everything that still needs a live test is listed under [To verify on a test pla
 
 Unchanged: the provider layer, the two-step [RAG](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) selection, [streaming](https://github.com/w3hc/rukh/blob/main/docs/STREAMING.md), the [context file layout](https://github.com/w3hc/rukh/blob/main/docs/CONTEXT_MANAGEMENT.md) under `data/contexts/`, and the rule that `instruction-file.md` is always sent to the model.
 
-Rukh is licensed under the [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html); Rukh ENT is released under the [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html), which the LGPL-3.0 permits. Keeping the ENT code in its own modules makes merges from upstream cheaper.
+Rukh is licensed under the [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html); Alegria is released under the [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html), which the LGPL-3.0 permits. Keeping the ENT code in its own modules makes merges from upstream cheaper.
 
 ## Architecture
 
@@ -69,7 +69,7 @@ Rukh is licensed under the [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html
 sequenceDiagram
     participant B as Browser
     participant E as ENT (Edifice)
-    participant R as Rukh ENT (VPS)
+    participant R as Alegria (VPS)
     participant L as Model provider
 
     B->>E: click the connector
@@ -94,7 +94,7 @@ sequenceDiagram
 ### Repository layout
 
 ```
-rukh-ent/
+alegria/
 ├── src/                 NestJS application (the fork)
 │   ├── db/              SQLite connection and numbered .sql migrations
 │   ├── ent/             OAuth flow, session, guards, roles
@@ -103,7 +103,7 @@ rukh-ent/
 │   └── …                upstream modules
 ├── web/                 Vite single-page app
 │   └── dist/            build output, served at /
-├── data/                rukh-ent.db, contexts, chat history
+├── data/                alegria.db, contexts, chat history
 └── .env
 ```
 
@@ -132,7 +132,7 @@ Swagger UI is mounted outside the NestJS guard chain, so a guard does not protec
 
 ### Why OAuth 2.0 and not OpenID Connect
 
-Edifice offers three connector types: [OAuth 2.0](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/1184891013/Connecteur+-+OAuth+2.0+-+SSO+et+API), [OpenID Connect](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/3827826760/Connecteur+-+OpenID+Connect+SSO+et+SLO) and [CAS](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/3484811463/Connecteur+-+CAS+-+SSO+et+SLO). The standard OpenID Connect claims returned by Edifice carry a name and an email but no profile type. The OAuth 2.0 `userinfo` response does, so Rukh ENT uses the [authorization code grant](https://oauth.net/2/grant-types/authorization-code/) with the `userinfo` scope.
+Edifice offers three connector types: [OAuth 2.0](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/1184891013/Connecteur+-+OAuth+2.0+-+SSO+et+API), [OpenID Connect](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/3827826760/Connecteur+-+OpenID+Connect+SSO+et+SLO) and [CAS](https://edifice-community.atlassian.net/wiki/spaces/PUBLIC/pages/3484811463/Connecteur+-+CAS+-+SSO+et+SLO). The standard OpenID Connect claims returned by Edifice carry a name and an email but no profile type. The OAuth 2.0 `userinfo` response does, so Alegria uses the [authorization code grant](https://oauth.net/2/grant-types/authorization-code/) with the `userinfo` scope.
 
 ### Connector record
 
@@ -156,7 +156,7 @@ Each school's ENT administrator creates an OAuth2 connector in the administratio
 | Token | `POST {ENT}/auth/oauth2/token`, client authenticated with [HTTP Basic](https://datatracker.ietf.org/doc/html/rfc7617) |
 | User | `GET {ENT}/auth/oauth2/userinfo?version=2.0`, [Bearer](https://datatracker.ietf.org/doc/html/rfc6750) token |
 
-The access token lasts 3600 seconds. Rukh ENT uses it once, to read `userinfo`, and never stores or refreshes it.
+The access token lasts 3600 seconds. Alegria uses it once, to read `userinfo`, and never stores or refreshes it.
 
 Three facts from the [entcore source](https://github.com/edificeio/entcore/blob/master/auth/src/main/java/org/entcore/auth/controllers/AuthController.java):
 
@@ -222,7 +222,7 @@ The response shape depends on a `version` parameter ([source](https://github.com
 | 1.0, the default ([source](https://github.com/edificeio/entcore/blob/master/auth/src/main/java/org/entcore/auth/adapter/UserInfoAdapterV1_0Json.java)) | `ENSEIGNANT`, `ELEVE`, `PERSEDUCNAT`, `PERSRELELEVE`, `SUPERADMIN` | `classId`: the first class only |
 | 2.0 | `Teacher`, `Student`, `Personnel`, `Relative`, `SuperAdmin` | `classNames`: all classes |
 
-Rukh ENT requests version 2.0, because a teacher needs all of their classes to choose who sees an assistant. Three rules follow:
+Alegria requests version 2.0, because a teacher needs all of their classes to choose who sees an assistant. Three rules follow:
 
 - accept both sets of `type` values;
 - read only the fields listed below and discard the rest, since version 2.0 returns most of the user's ENT session;
@@ -445,7 +445,7 @@ An assistant is a Rukh context plus ENT metadata.
 
 ### Context index
 
-ENT metadata lives in an `assistants` table in `data/rukh-ent.db`, so "assistants visible to this user" is one query instead of a read of every `index.json`. Documents stay as Markdown under `data/contexts/<name>/`, where the upstream RAG code reads them, and the upstream `index.json` keeps its files, links and queries without the ENT fields.
+ENT metadata lives in an `assistants` table in `data/alegria.db`, so "assistants visible to this user" is one query instead of a read of every `index.json`. Documents stay as Markdown under `data/contexts/<name>/`, where the upstream RAG code reads them, and the upstream `index.json` keeps its files, links and queries without the ENT fields.
 
 ```sql
 -- src/db/migrations/001-init.sql
@@ -743,13 +743,13 @@ The [MCP authorization specification](https://modelcontextprotocol.io/specificat
 
 Edifice cannot play that role directly: its authorize handler reads no PKCE parameter, its documentation describes no dynamic registration, and it only redirects to hosts of registered applications, which excludes an MCP client's callback.
 
-So Rukh ENT is its own authorization server for MCP, and delegates the user's authentication to the ENT:
+So Alegria is its own authorization server for MCP, and delegates the user's authentication to the ENT:
 
 1. The MCP client discovers `/.well-known/oauth-protected-resource`, then the authorization server metadata.
-2. It registers, then opens Rukh ENT's `/authorize` with a PKCE challenge.
-3. Rukh ENT sends the user through the ENT flow described above.
-4. Rukh ENT shows a consent screen naming the client, as the specification requires of a server that proxies to a third-party authorization server.
-5. Rukh ENT issues its own short-lived token, bound to `/mcp`, carrying the ENT user id and role.
+2. It registers, then opens Alegria's `/authorize` with a PKCE challenge.
+3. Alegria sends the user through the ENT flow described above.
+4. Alegria shows a consent screen naming the client, as the specification requires of a server that proxies to a third-party authorization server.
+5. Alegria issues its own short-lived token, bound to `/mcp`, carrying the ENT user id and role.
 
 Identity still comes only from the ENT. The ENT access token is never passed to the MCP client.
 
@@ -789,20 +789,20 @@ rukh.example {
 ### Service
 
 ```ini
-# /etc/systemd/system/rukh-ent.service
+# /etc/systemd/system/alegria.service
 [Unit]
-Description=Rukh ENT
+Description=Alegria
 After=network-online.target
 
 [Service]
 User=rukh
-WorkingDirectory=/srv/rukh-ent
-EnvironmentFile=/etc/rukh-ent.env
+WorkingDirectory=/srv/alegria
+EnvironmentFile=/etc/alegria.env
 ExecStart=/usr/bin/node dist/main
 Restart=on-failure
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/srv/rukh-ent/data
+ReadWritePaths=/srv/alegria/data
 PrivateTmp=true
 
 [Install]
@@ -818,16 +818,16 @@ pnpm install --frozen-lockfile
 pnpm --dir web install --frozen-lockfile
 pnpm --dir web build      # web/dist
 pnpm build                # dist
-sudo systemctl restart rukh-ent
+sudo systemctl restart alegria
 ```
 
 ### Data and backups
 
-Everything lives under `data/`: `rukh-ent.db` (assistants and conversations), `contexts/` and `chat-history.json`. The database runs in [WAL mode](https://sqlite.org/wal.html), so copying the file while the service writes can produce a corrupt backup. Snapshot it first with SQLite's [online backup](https://sqlite.org/backup.html), then back the directory up daily to storage outside the VPS, encrypted, for example with [restic](https://restic.net/). Test a restore before the pilot.
+Everything lives under `data/`: `alegria.db` (assistants and conversations), `contexts/` and `chat-history.json`. The database runs in [WAL mode](https://sqlite.org/wal.html), so copying the file while the service writes can produce a corrupt backup. Snapshot it first with SQLite's [online backup](https://sqlite.org/backup.html), then back the directory up daily to storage outside the VPS, encrypted, for example with [restic](https://restic.net/). Test a restore before the pilot.
 
 ```bash
-sqlite3 /srv/rukh-ent/data/rukh-ent.db ".backup /srv/rukh-ent/data/backup/rukh-ent.db"
-restic backup /srv/rukh-ent/data --exclude /srv/rukh-ent/data/rukh-ent.db*
+sqlite3 /srv/alegria/data/alegria.db ".backup /srv/alegria/data/backup/alegria.db"
+restic backup /srv/alegria/data --exclude /srv/alegria/data/alegria.db*
 ```
 
 Migrations are numbered `.sql` files in `src/db/migrations/`, tracked with `PRAGMA user_version` and applied at startup in one transaction: a failed migration stops the service and leaves the database as it was.
@@ -861,7 +861,7 @@ MISTRAL_API_KEY=
 ANTHROPIC_API_KEY=
 
 # Storage
-DB_PATH=data/rukh-ent.db        # `:memory:` in tests
+DB_PATH=data/alegria.db        # `:memory:` in tests
 
 # Server
 PORT=3000
@@ -888,7 +888,7 @@ Upstream requires both `MISTRAL_API_KEY` and `ANTHROPIC_API_KEY` to boot, becaus
 | Students overriding the instructions | Rukh already delimits the user message and restates that the context wins |
 | Shared classroom computers | Fresh flow on entry, idle timeout, browser-session cookie |
 | Uploaded files | Size limit, timeout, isolated conversion process |
-| Secrets | In `/etc/rukh-ent.env`, readable by the service user only |
+| Secrets | In `/etc/alegria.env`, readable by the service user only |
 
 Personal data held by the server: ENT user id, profile, role, school codes, class names, and conversation text. No name, login or email is stored.
 

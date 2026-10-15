@@ -1,4 +1,4 @@
-# Rukh ENT
+# Alegria
 
 Rukh course assistants inside the [Edifice](https://edifice.io) ENT. Teachers create and publish assistants; everyone else uses them. Identity comes only from the ENT. See the [ENT module spec](https://julienberanger.com/ent-module-spec).
 
@@ -7,7 +7,7 @@ Rukh course assistants inside the [Edifice](https://edifice.io) ENT. Teachers cr
 - `docs/RESOURCES.md` — legal constraints (cadre d'usage, GDPR, CNIL, AI Act), how Rukh meets them, and resources
 - `docs/INTEGRATION_GUIDELINES.md` — registering the connector with an ENT, its env vars, and how ENT profiles map to roles and how to change that
 - `docs/TEMPLATING.md` — existing Edifice starters, the generic parts of an ENT connector, and the shape of a reusable template
-- `docs/TARGET_WORKFLOWS.md` — how students and teachers will reach Rukh ENT from the ENT, an LLM connector, a custom frontend and a future mobile app, with links to the issues tracking each step
+- `docs/TARGET_WORKFLOWS.md` — how students and teachers will reach Alegria from the ENT, an LLM connector, a custom frontend and a future mobile app, with links to the issues tracking each step
 
 ## Install
 
@@ -16,7 +16,7 @@ pnpm i
 cp .env.example .env
 ```
 
-`pnpm i` builds the better-sqlite3 native module. The database, `data/rukh-ent.db` by default (`DB_PATH`), is created and migrated on first start.
+`pnpm i` builds the better-sqlite3 native module. The database, `data/alegria.db` by default (`DB_PATH`), is created and migrated on first start.
 
 The example config runs locally against the mock ENT, which stands in for Edifice's OAuth endpoints and lets you sign in as a teacher, staff member, student, parent or super-admin.
 
@@ -26,7 +26,7 @@ The example config runs locally against the mock ENT, which stands in for Edific
 pnpm check                         # Prettier and ESLint
 pnpm test                          # unit tests
 pnpm test:e2e                      # end-to-end tests against the mock ENT
-pnpm --filter rukh-ent-web test    # web app tests
+pnpm --filter alegria-web test    # web app tests
 ```
 
 ## Run
@@ -69,7 +69,7 @@ Teachers get the `teacher` role and can edit; personnel, students, parents and s
 
 ## MCP
 
-With `MCP_ENABLED=true`, `/mcp` serves a `whoami` tool, and Rukh ENT acts as the OAuth 2.1 authorization server for MCP clients. Sign-in still goes through the ENT.
+With `MCP_ENABLED=true`, `/mcp` serves a `whoami` tool, and Alegria acts as the OAuth 2.1 authorization server for MCP clients. Sign-in still goes through the ENT.
 
 To connect a client such as claude.ai or Claude Desktop, add a custom connector with the URL `https://<your domain>/mcp`. The client then:
 
@@ -88,11 +88,11 @@ Only roles listed in `MCP_ROLES` (`teacher` by default) can connect; others are 
 | `pnpm check` | Prettier and ESLint |
 | `pnpm test` | Unit tests |
 | `pnpm test:e2e` | End-to-end tests: boots the app against the mock ENT and runs the login flow and assistant routes over HTTP |
-| `pnpm --filter rukh-ent-web test` | Web app tests (Vitest, jsdom): loading, login errors, Welcome, logout and the assistants list |
+| `pnpm --filter alegria-web test` | Web app tests (Vitest, jsdom): loading, login errors, Welcome, logout and the assistants list |
 
 ## Contributing
 
-Contributions are welcome. Open or pick an issue first; [`good first issue`](https://github.com/julienbrg/rukh-ent/labels/good%20first%20issue) is a good place to start. Before you open a pull request, run `pnpm check` and the tests. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and the review flow.
+Contributions are welcome. Open or pick an issue first; [`good first issue`](https://github.com/julienbrg/alegria/labels/good%20first%20issue) is a good place to start. Before you open a pull request, run `pnpm check` and the tests. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and the review flow.
 
 ## Contact
 
