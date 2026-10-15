@@ -78,6 +78,10 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  ANTHROPIC_EFFORT?: string;
+
+  @IsOptional()
+  @IsString()
   OPENAI_API_KEY?: string;
 
   @IsOptional()
