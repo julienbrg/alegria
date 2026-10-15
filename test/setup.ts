@@ -35,7 +35,7 @@ export async function bootApp(
     NODE_ENV: 'test',
     ENT_MOCK: 'true',
     ENT_BASE_URL: `${origin}/mock-ent`,
-    ENT_CLIENT_ID: 'rukh',
+    ENT_CLIENT_ID: 'alegria',
     ENT_CLIENT_SECRET: 'e2e',
     ENT_REDIRECT_URI: `${origin}/auth/callback`,
     ENT_USERINFO_VERSION: '2.0',
@@ -64,7 +64,7 @@ export async function bootApp(
 
 /**
  * Minimal cookie jar. Superagent's own jar never sends `Secure` cookies
- * over plain HTTP, and every Rukh cookie is `__Host-` and `Secure`.
+ * over plain HTTP, and every Alegria cookie is `__Host-` and `Secure`.
  */
 export class CookieJar {
   private readonly cookies = new Map<string, string>();

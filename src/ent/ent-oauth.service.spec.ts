@@ -4,9 +4,9 @@ import { EntOAuthService } from './ent-oauth.service';
 
 const values = {
   ENT_BASE_URL: 'https://ent.example.fr/',
-  ENT_CLIENT_ID: 'rukh',
+  ENT_CLIENT_ID: 'alegria',
   ENT_CLIENT_SECRET: 'secret',
-  ENT_REDIRECT_URI: 'https://rukh.example.fr/auth/callback',
+  ENT_REDIRECT_URI: 'https://alegria.example.fr/auth/callback',
   ENT_USERINFO_VERSION: '2.0',
 };
 const oauth = new EntOAuthService({

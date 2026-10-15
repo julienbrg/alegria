@@ -6,7 +6,7 @@ import { McpController, McpRequest } from './mcp.controller';
 
 const values = {
   MCP_ROLES: 'teacher',
-  PUBLIC_ORIGIN: 'https://rukh.example.fr',
+  PUBLIC_ORIGIN: 'https://alegria.example.fr',
 };
 const controller = new McpController({
   get: (key: string) => values[key],

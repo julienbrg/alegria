@@ -28,7 +28,7 @@ import type { EntUser } from '../../ent/session.service';
 import { ClientsStore } from './clients.store';
 import { McpTokenService } from './mcp-token.service';
 
-export const PENDING_COOKIE = '__Host-rukh-mcp-auth';
+export const PENDING_COOKIE = '__Host-alegria-mcp-auth';
 export const CONSENT_PATH = '/oauth/consent';
 const PENDING_TTL_SECONDS = 10 * 60;
 const CODE_TTL_SECONDS = 60;

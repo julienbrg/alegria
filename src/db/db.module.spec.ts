@@ -54,7 +54,7 @@ describe('openDatabase', () => {
     let dir: string;
 
     beforeEach(() => {
-      dir = mkdtempSync(join(tmpdir(), 'rukh-db-'));
+      dir = mkdtempSync(join(tmpdir(), 'alegria-db-'));
     });
 
     afterEach(() => {

@@ -32,7 +32,7 @@ describe('Swagger enabled', () => {
     expect(body.components.securitySchemes.session).toEqual({
       type: 'apiKey',
       in: 'cookie',
-      name: '__Host-rukh',
+      name: '__Host-alegria',
     });
     expect(body.security).toEqual([{ session: [] }]);
   });

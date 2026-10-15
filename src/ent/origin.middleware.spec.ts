@@ -4,7 +4,7 @@ import type { Request, Response } from 'express';
 import { OriginMiddleware } from './origin.middleware';
 
 const middleware = new OriginMiddleware({
-  get: () => 'https://rukh.example.fr/',
+  get: () => 'https://alegria.example.fr/',
 } as unknown as ConfigService);
 
 function run(method: string, origin?: string) {
@@ -20,7 +20,7 @@ describe('OriginMiddleware', () => {
   });
 
   it('lets same-origin writes through', () => {
-    expect(run('POST', 'https://rukh.example.fr')).toHaveBeenCalled();
+    expect(run('POST', 'https://alegria.example.fr')).toHaveBeenCalled();
   });
 
   it.each([['https://evil.example'], [undefined]])(

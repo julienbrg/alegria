@@ -4,11 +4,11 @@ import type { Response } from 'express';
 import { MockEntController } from './mock-ent.controller';
 
 const REDIRECT = 'http://localhost:3000/auth/callback';
-const BASIC = `Basic ${Buffer.from('rukh:s').toString('base64')}`;
+const BASIC = `Basic ${Buffer.from('alegria:s').toString('base64')}`;
 
 function setup() {
   const values = {
-    ENT_CLIENT_ID: 'rukh',
+    ENT_CLIENT_ID: 'alegria',
     ENT_CLIENT_SECRET: 's',
     ENT_REDIRECT_URI: REDIRECT,
   };
@@ -18,7 +18,7 @@ function setup() {
   const res = { redirect: vi.fn() };
   controller.approve(
     'student',
-    'rukh',
+    'alegria',
     REDIRECT,
     'st',
     res as unknown as Response,
@@ -37,7 +37,7 @@ describe('MockEntController', () => {
   it('refuses an unknown redirect_uri', () => {
     const { controller } = setup();
     expect(() =>
-      controller.authorize('rukh', 'https://evil.example/cb', 'st'),
+      controller.authorize('alegria', 'https://evil.example/cb', 'st'),
     ).toThrow(BadRequestException);
   });
 

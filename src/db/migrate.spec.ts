@@ -68,7 +68,7 @@ describe('loadMigrations', () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'rukh-migrations-'));
+    dir = mkdtempSync(join(tmpdir(), 'alegria-migrations-'));
   });
 
   afterEach(() => {
