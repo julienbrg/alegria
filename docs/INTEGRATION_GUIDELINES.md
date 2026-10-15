@@ -41,17 +41,19 @@ The code lives in [`src/ent/ent.controller.ts`](../src/ent/ent.controller.ts) an
 | `ENT_CLIENT_ID`, `ENT_CLIENT_SECRET` | yes | From the connector registration |
 | `ENT_REDIRECT_URI` | yes | `https://<your domain>/auth/callback` |
 | `ENT_USERINFO_VERSION` | no | `userinfo` API version, `2.0` by default |
-| `ENT_ALLOWED_MODELS` | no | Comma-separated models teachers may pick |
+| `ENT_ALLOWED_MODELS` | no | Comma-separated models teachers may pick, among `mistral`, `anthropic`, `anthropic-web-search`, `openai` and `deepseek` |
+| `ENT_LOG_QUERIES` | no | `true` keeps the message in each context's query log and in `data/costs.json`; `false` by default keeps the timestamp and files used |
 | `ENT_MOCK` | no | `true` serves a fake ENT at `/mock-ent`; development only |
 | `PUBLIC_ORIGIN` | yes | See [above](#public_origin) |
 | `SESSION_SECRET` | yes | Signs the session cookie; generate with `openssl rand -base64 48` |
 | `SESSION_IDLE_SECONDS`, `SESSION_MAX_SECONDS` | no | 30-minute sliding idle timeout, 8-hour maximum age |
-| `MISTRAL_API_KEY`, `ANTHROPIC_API_KEY` | per model | Keys for the providers behind `ENT_ALLOWED_MODELS` |
+| `MISTRAL_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `DEEPSEEK_API_KEY` | per model | Keys for the providers behind `ENT_ALLOWED_MODELS`. A provider without a key is skipped. Mistral also selects the documents sent with each question; without its key, every document is sent |
+| `ANTHROPIC_EFFORT` | no | Effort level passed to Anthropic models |
 | `DB_PATH` | no | SQLite file, `data/alegria.db` by default |
 | `SWAGGER_ENABLED` | no | Swagger UI at `/api`, unprotected; keep `false` in production |
 | `MCP_ENABLED`, `MCP_ROLES`, `MCP_TOKEN_SECONDS` | no | See [MCP](#mcp_roles) |
 
-`ENT_LOG_QUERIES`, `THROTTLE_ASK_LIMIT` and `IMPORT_MAX_BYTES` are validated but not used yet; they are reserved for `/ask` and document import.
+`THROTTLE_ASK_LIMIT` and `IMPORT_MAX_BYTES` are validated but not used yet; they are reserved for the `/ask` rate limit and document import.
 
 ### Try it locally
 

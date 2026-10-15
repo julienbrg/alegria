@@ -38,6 +38,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - README `Test` section
 - OAuth 2.1 authorization server for MCP clients, on the MCP SDK auth router: discovery metadata, dynamic client registration, `/authorize` with S256 PKCE, and `/token`. Sign-in goes through the ENT login, then a consent screen naming the client. Access tokens are bound to `/mcp`, carry the ENT user id, profile and role, last `MCP_TOKEN_SECONDS` (1 hour by default) and come without refresh tokens
 - `oauth_clients` and `oauth_codes` tables; codes are single-use, stored hashed and expire after 60 seconds
+- `POST /ask`, ported from Rukh with its provider layer (Mistral, Anthropic, Anthropic with web search, OpenAI, DeepSeek), streaming as server-sent events and two-step selection of the context's Markdown files, with `instruction-file.md` always sent. It needs a session and an assistant visible to the caller (`404` otherwise), runs on the assistant's `model`, which must still be in `ENT_ALLOWED_MODELS` (`400` otherwise), and ignores a client `sessionId`: each call is a new conversation until conversations are owned by the server
+- A provider without an API key is skipped instead of stopping the server at startup
+- `ENT_LOG_QUERIES=false` by default: the context query log and `data/costs.json` keep the timestamp and files used, not the message
+- `OPENAI_API_KEY`, `DEEPSEEK_API_KEY` and `ANTHROPIC_EFFORT` settings
 - `docs/RESOURCES.md`: GAR requirements for resource providers from the GAR contract (v2026), with Alegria's answer or what is missing for each, and links to the GAR documentation
 - `next` parameter on `/auth/login`: a same-origin path to land on after login
 - README section on connecting an MCP client
