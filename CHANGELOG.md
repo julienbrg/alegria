@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - NestJS backend with environment validation for the ENT module variables
 - Edifice OAuth 2.0 login: `/auth/login`, `/auth/callback` with a `state` cookie, `/auth/logout`
-- Signed session cookie `__Host-rukh` with a 30-minute sliding idle timeout and an 8-hour maximum age
+- Signed session cookie `__Host-alegria` with a 30-minute sliding idle timeout and an 8-hour maximum age
 - Edifice profile to role mapping: Teacher to `teacher` (can edit); Personnel, Student, Parent and Super-admin to `user` (can only use); others refused
 - Global deny-by-default session guard with `@Public()` opt-out, and an Origin check on non-GET requests
 - `GET /me` returning role, schools, classes and allowed models
@@ -30,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `docs/INTEGRATION_GUIDELINES.md`: registering the connector with an ENT, env vars, the OAuth callback and `PUBLIC_ORIGIN`; how ENT profiles map to roles, where roles are enforced, and how to change the mapping with what each change exposes. Linked from `README.md` and `docs/TEMPLATING.md`
 - Vitest and Testing Library in `web/` (`pnpm --filter alegria-web test`, run in CI), with tests for the app's auth states: loading spinner, Login on 401, `?error=refused` and `?error=state` messages, Welcome with the profile, and Log out
 - `CONTRIBUTING.md`: setup, checks, issue, branch, commit and pull request conventions, and licensing of contributions; linked from the README
-- Swagger UI on `/api` and the OpenAPI document on `/api-json` when `SWAGGER_ENABLED=true`, with the `__Host-rukh` session cookie as the default security scheme, `@Public()` routes marked anonymous and the mock ENT left out; e2e tests for both settings
+- Swagger UI on `/api` and the OpenAPI document on `/api-json` when `SWAGGER_ENABLED=true`, with the `__Host-alegria` session cookie as the default security scheme, `@Public()` routes marked anonymous and the mock ENT left out; e2e tests for both settings
 - SQLite storage on better-sqlite3: `data/alegria.db` (`DB_PATH`, `:memory:` in tests) in WAL mode with foreign keys on, and numbered `.sql` migrations tracked with `PRAGMA user_version`, applied at startup in one transaction so a failed migration stops startup and leaves the database unchanged
 - `assistants` and `conversations` tables; assistant documents stay as Markdown under `data/contexts/<name>/`
 - Assistants module: `GET /context` lists the assistants visible to the caller, `POST /context` creates a draft (teachers only, name generated as `hdf-<uai>-<slug>-<6 chars>`, owner and school from the session), and `GET`, `PATCH` and `DELETE /context/:name`. Visible to the owner, or once published to the same school with a matching or empty class list; hidden assistants return 404. Only the owning teacher edits or deletes; `model` must be one of `ENT_ALLOWED_MODELS`
@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Project renamed from rukh-ent to Alegria: packages `alegria` and `alegria-web`, default `DB_PATH` `data/alegria.db` (rename an existing `data/rukh-ent.db` or set `DB_PATH`), MCP server name and HKDF labels (existing MCP tokens and pending authorizations become invalid), GitHub links and docs
+- Project renamed from rukh-ent to Alegria: packages `alegria` and `alegria-web`, default `DB_PATH` `data/alegria.db` (rename an existing `data/rukh-ent.db` or set `DB_PATH`), MCP server name and HKDF labels (existing MCP tokens and pending authorizations become invalid), cookies `__Host-alegria*` (existing sessions are logged out), `ENT_CLIENT_ID` example `alegria`, GitHub links and docs
 - `main.ts` setup (Helmet, cookie parser, validation pipe) moved to `configureApp()` in `src/app.setup.ts`, shared with the e2e tests
 - License switched from LGPL-3.0-or-later to [AGPL-3.0-or-later](LICENSE)
 - `.claude/spec.md` roles aligned with the code: `teacher` (Teacher, can edit) and `user` (Personnel, Student, Parent, Super-admin, can only use); the session snippet carries `profile`

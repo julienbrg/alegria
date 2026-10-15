@@ -19,7 +19,7 @@ The school's ENT administrator has registered Alegria as an OAuth 2.0 connector 
 
 ### Student
 
-1. In the ENT, the student clicks the Rukh tile.
+1. In the ENT, the student clicks the Alegria tile.
 2. Alegria opens. The ENT session is already open, so there is no login page and no consent screen.
 3. The home page lists the assistants published to their school or class ([#55](https://github.com/julienbrg/alegria/issues/55)).
 4. They pick one and chat. Answers stream in, built from the teacher's instructions and documents ([#53](https://github.com/julienbrg/alegria/issues/53)). The page shows which provider receives their messages.
@@ -58,7 +58,7 @@ Tracked in [#71](https://github.com/julienbrg/alegria/issues/71).
    - ChatGPT: depends on plan and developer mode ([#66](https://github.com/julienbrg/alegria/issues/66))
 2. They click Connect. A browser tab opens on Alegria.
 3. The tab goes to the ENT login page, skipped if the ENT session is already open.
-4. Alegria shows a consent screen naming the client, for example: "Claude wants to use Rukh as Jeanne D., student, 2nde B." They click Allow.
+4. Alegria shows a consent screen naming the client, for example: "Claude wants to use Alegria as Jeanne D., student, 2nde B." They click Allow.
 5. The tab returns to the client, which shows the connector as connected.
 
 ### Student
@@ -94,7 +94,7 @@ The operator registers the frontend as a client: name, origin and redirect URL (
 
 1. They open the teacher's site, for example `svt-martin.fr`, and click "Sign in with the ENT".
 2. The browser goes to Alegria, then to the ENT login page, skipped if the ENT session is open.
-3. Alegria shows a consent screen naming the site: "Mme Martin's site wants to use Rukh as you." They click Allow.
+3. Alegria shows a consent screen naming the site: "Mme Martin's site wants to use Alegria as you." They click Allow.
 4. Back on the site, the page receives an access token and a refresh token ([#68](https://github.com/julienbrg/alegria/issues/68)).
 5. The page lists the assistants, possibly only Mme Martin's, and chats with them through the API.
 
@@ -132,7 +132,7 @@ Not planned yet: no issue tracks it. A native iOS or Android app would be a cust
 
 | | ENT | LLM connector | Custom UI |
 | --- | --- | --- | --- |
-| Entry | Rukh tile in the ENT | Custom connector in Claude, Le Chat or ChatGPT | Sign-in button on another site |
+| Entry | Alegria tile in the ENT | Custom connector in Claude, Le Chat or ChatGPT | Sign-in button on another site |
 | Sign-in | ENT session, no prompt | ENT login, then consent | ENT login, then consent |
 | Credential | Session cookie | Access token for `/mcp`, 1 hour | Access token for the API, plus refresh token |
 | Staying signed in | 30 minutes idle, 8 hours max | Reconnect every hour | Silent refresh |

@@ -23,13 +23,13 @@ The connector must be attached to the schools and profiles that should see it. A
 1. `GET /auth/login` sets a `state` cookie and redirects to `ENT_BASE_URL/auth/oauth2/auth`.
 2. The ENT redirects back to `ENT_REDIRECT_URI`, which must be `https://<your domain>/auth/callback`, with `code` and `state`.
 3. Alegria checks `state`, exchanges the code at `/auth/oauth2/token` (HTTP Basic with the client id and secret), reads `/auth/oauth2/userinfo` once, then discards the ENT access token.
-4. It maps the userinfo to a profile and a role, issues the `__Host-rukh` session cookie and redirects to `/`. A refused profile is sent to `/?error=refused`, a bad `state` to `/?error=state`.
+4. It maps the userinfo to a profile and a role, issues the `__Host-alegria` session cookie and redirects to `/`. A refused profile is sent to `/?error=refused`, a bad `state` to `/?error=state`.
 
 The code lives in [`src/ent/ent.controller.ts`](../src/ent/ent.controller.ts) and [`src/ent/ent-oauth.service.ts`](../src/ent/ent-oauth.service.ts).
 
 ### `PUBLIC_ORIGIN`
 
-`PUBLIC_ORIGIN` is the scheme and host users see, such as `https://rukh.example`. Every request other than `GET`, `HEAD` and `OPTIONS` must carry it as its `Origin` header ([`origin.middleware.ts`](../src/ent/origin.middleware.ts)), and the MCP authorization server uses it as its issuer. Behind a reverse proxy, set it to the public URL, not the internal one. It must match the host in `ENT_REDIRECT_URI`, since the session cookie is host-only.
+`PUBLIC_ORIGIN` is the scheme and host users see, such as `https://alegria.example`. Every request other than `GET`, `HEAD` and `OPTIONS` must carry it as its `Origin` header ([`origin.middleware.ts`](../src/ent/origin.middleware.ts)), and the MCP authorization server uses it as its issuer. Behind a reverse proxy, set it to the public URL, not the internal one. It must match the host in `ENT_REDIRECT_URI`, since the session cookie is host-only.
 
 ### Environment variables
 

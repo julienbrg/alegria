@@ -73,7 +73,7 @@ sequenceDiagram
     participant L as Model provider
 
     B->>E: click the connector
-    E->>B: open https://rukh.example/auth/login
+    E->>B: open https://alegria.example/auth/login
     B->>R: GET /auth/login
     R->>B: 302 to /auth/oauth2/auth (state)
     B->>E: authorization request (ENT session already open)
@@ -140,8 +140,8 @@ Each school's ENT administrator creates an OAuth2 connector in the administratio
 
 | Console field | Value |
 | --- | --- |
-| *Identifiant* (`client_id`) | `rukh` |
-| *URL* | `https://rukh.example/auth/login` |
+| *Identifiant* (`client_id`) | `alegria` |
+| *URL* | `https://alegria.example/auth/login` |
 | *Transmettre la session* | checked |
 | *Scope* | `userinfo` |
 | *Mode d'identification* | `code` |
@@ -171,7 +171,7 @@ Three facts from the [entcore source](https://github.com/edificeio/entcore/blob/
 const ENT = process.env.ENT_BASE_URL!; // https://enthdf.fr
 const CLIENT_ID = process.env.ENT_CLIENT_ID!;
 const CLIENT_SECRET = process.env.ENT_CLIENT_SECRET!;
-const REDIRECT_URI = process.env.ENT_REDIRECT_URI!; // https://rukh.example/auth/callback
+const REDIRECT_URI = process.env.ENT_REDIRECT_URI!; // https://alegria.example/auth/callback
 
 export function authorizeUrl(state: string): string {
   const query = new URLSearchParams({
@@ -246,7 +246,7 @@ const PROFILE_BY_TYPE: Record<string, Profile> = {
 const PRECEDENCE: Profile[] = ['Teacher', 'Personnel', 'Student', 'Parent'];
 
 /**
- * Maps an Edifice profile type to a Rukh profile. Super-admin wins over
+ * Maps an Edifice profile type to an Alegria profile. Super-admin wins over
  * any type; guests and unknown profiles get `null` and are refused at login.
  */
 export function profileFromUserinfo(
@@ -331,7 +331,7 @@ This snippet was executed with jose 6: a fresh token round-trips, a token past t
 
 | Property | Value |
 | --- | --- |
-| Cookie name | `__Host-rukh` |
+| Cookie name | `__Host-alegria` |
 | [Attributes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie) | `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, no `Expires` (cleared when the browser closes) |
 | Idle timeout | 30 minutes; the cookie is re-issued on each authenticated request |
 | Maximum age | 8 hours from login |
@@ -347,7 +347,7 @@ export class AuthController {
   @Get('login')
   login(@Res() res: Response) {
     const state = randomBytes(16).toString('hex');
-    res.cookie('__Host-rukh-state', state, STATE_COOKIE); // HttpOnly, Secure, Lax, 10 min
+    res.cookie('__Host-alegria-state', state, STATE_COOKIE); // HttpOnly, Secure, Lax, 10 min
     res.redirect(authorizeUrl(state));
   }
 
@@ -358,17 +358,17 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    if (!code || !state || state !== req.cookies['__Host-rukh-state']) {
+    if (!code || !state || state !== req.cookies['__Host-alegria-state']) {
       throw new UnauthorizedException('invalid state');
     }
-    res.clearCookie('__Host-rukh-state', STATE_COOKIE);
+    res.clearCookie('__Host-alegria-state', STATE_COOKIE);
 
     const info = await fetchUserInfo(await exchangeCode(code));
     const profile = profileFromUserinfo(info.type, info.functions);
     if (!profile) throw new ForbiddenException('profile not allowed');
 
     res.cookie(
-      '__Host-rukh',
+      '__Host-alegria',
       await seal({
         id: info.userId,
         profile,
@@ -383,7 +383,7 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res() res: Response) {
-    res.clearCookie('__Host-rukh', SESSION_COOKIE);
+    res.clearCookie('__Host-alegria', SESSION_COOKIE);
     res.status(204).end();
   }
 }
@@ -415,7 +415,7 @@ export class EntSessionGuard implements CanActivate {
 
     let user: SessionUser;
     try {
-      user = await unseal(req.cookies['__Host-rukh']);
+      user = await unseal(req.cookies['__Host-alegria']);
     } catch {
       throw new UnauthorizedException();
     }
@@ -424,7 +424,7 @@ export class EntSessionGuard implements CanActivate {
     if (roles && !roles.includes(user.role)) throw new ForbiddenException();
 
     req.user = user;
-    res.cookie('__Host-rukh', await seal(user, user.startedAt), SESSION_COOKIE); // sliding
+    res.cookie('__Host-alegria', await seal(user, user.startedAt), SESSION_COOKIE); // sliding
     return true;
   }
 }
@@ -776,7 +776,7 @@ Model inference runs at the provider, so the server's load comes mostly from doc
 ### Reverse proxy
 
 ```
-rukh.example {
+alegria.example {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:3000 {
 		flush_interval -1
@@ -795,7 +795,7 @@ Description=Alegria
 After=network-online.target
 
 [Service]
-User=rukh
+User=alegria
 WorkingDirectory=/srv/alegria
 EnvironmentFile=/etc/alegria.env
 ExecStart=/usr/bin/node dist/main
@@ -839,15 +839,15 @@ A single `chat-history.json` holds every conversation. Measure it under load; if
 ```bash
 # ENT
 ENT_BASE_URL=https://enthdf.fr
-ENT_CLIENT_ID=rukh
+ENT_CLIENT_ID=alegria
 ENT_CLIENT_SECRET=
-ENT_REDIRECT_URI=https://rukh.example/auth/callback
+ENT_REDIRECT_URI=https://alegria.example/auth/callback
 ENT_USERINFO_VERSION=2.0
 ENT_ALLOWED_MODELS=mistral,anthropic
 ENT_LOG_QUERIES=false
 
 # Session
-PUBLIC_ORIGIN=https://rukh.example
+PUBLIC_ORIGIN=https://alegria.example
 SESSION_SECRET=                 # 32 random bytes or more
 SESSION_IDLE_SECONDS=1800
 SESSION_MAX_SECONDS=28800
