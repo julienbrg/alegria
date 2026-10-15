@@ -46,6 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `next` parameter on `/auth/login`: a same-origin path to land on after login
 - README section on connecting an MCP client
 - `docs/TARGET_WORKFLOWS.md`: the three target ways in, from the ENT, an LLM connector (Claude, Le Chat, ChatGPT) and a custom frontend, step by step for students and teachers, with expiry, data flow, a comparison table, a possible future mobile app, open design points and links to the tracking issues; linked from the README
+- Server-owned conversations: `/ask` keeps one session per user and assistant, created on first ask, so follow-up questions carry the history and a client-supplied `sessionId` has no effect
+- `DELETE /ask/conversation/:context` starts a new conversation with an assistant visible to the caller
 
 ### Changed
 

@@ -58,6 +58,7 @@ Set `NODE_ENV=production`, `ENT_MOCK=false`, the ENT's `ENT_BASE_URL`, client id
 | `PATCH /context/:name` | owner | Updates `description`, `model`, `classes`, `published` |
 | `DELETE /context/:name` | owner | Deletes the assistant and its conversations |
 | `POST /ask` | session | Asks an assistant visible to the caller with its own model; `stream: true` answers as server-sent events. `404` if hidden |
+| `DELETE /ask/conversation/:context` | session | Starts a new conversation with the assistant; the next `/ask` gets a fresh session. `404` if hidden |
 | `POST /mcp` | Bearer, `MCP_ROLES` | MCP Streamable HTTP, when `MCP_ENABLED=true` |
 | `GET /.well-known/oauth-protected-resource/mcp`, `GET /.well-known/oauth-authorization-server` | public | MCP OAuth discovery |
 | `POST /register`, `GET /authorize`, `POST /token` | public | MCP OAuth: client registration, authorization with PKCE, token |
