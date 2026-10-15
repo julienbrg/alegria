@@ -4,7 +4,7 @@ import { APP_VERSION } from '../version';
 
 /** One server per request: tools close over the caller's identity. */
 export function createMcpServer(user: EntUser): McpServer {
-  const server = new McpServer({ name: 'rukh-ent', version: APP_VERSION });
+  const server = new McpServer({ name: 'alegria', version: APP_VERSION });
 
   server.registerTool(
     'whoami',

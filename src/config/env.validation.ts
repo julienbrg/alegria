@@ -78,7 +78,7 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  DB_PATH: string = 'data/rukh-ent.db';
+  DB_PATH: string = 'data/alegria.db';
 
   @IsInt()
   @IsPositive()

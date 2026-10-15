@@ -34,7 +34,7 @@ export const MCP_AUTH_ROUTER = 'MCP_AUTH_ROUTER';
           provider,
           issuerUrl: new URL(new URL(origin).origin),
           resourceServerUrl: mcpResource(origin),
-          resourceName: 'Rukh ENT',
+          resourceName: 'Alegria',
         });
       },
     },

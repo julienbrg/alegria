@@ -15,7 +15,7 @@ function escapeHtml(value: string): string {
 }
 
 function page(body: string): string {
-  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Rukh ENT</title><style>${STYLE}</style>${body}`;
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Alegria</title><style>${STYLE}</style>${body}`;
 }
 
 /** `form-action` must allow the redirect that follows the form post. */
@@ -71,7 +71,7 @@ export class ConsentController {
       )
       .send(
         page(
-          `<h1>Connect ${name}</h1><p><strong>${name}</strong> asks to use Rukh ENT as you (${escapeHtml(req.user.profile)}). It will be able to call the Rukh ENT tools with your identity, and will receive their answers at <strong>${host}</strong>.</p><form method="post"><button name="decision" value="approve">Allow</button><button name="decision" value="deny">Deny</button></form>`,
+          `<h1>Connect ${name}</h1><p><strong>${name}</strong> asks to use Alegria as you (${escapeHtml(req.user.profile)}). It will be able to call the Alegria tools with your identity, and will receive their answers at <strong>${host}</strong>.</p><form method="post"><button name="decision" value="approve">Allow</button><button name="decision" value="deny">Deny</button></form>`,
         ),
       );
   }

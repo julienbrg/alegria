@@ -60,7 +60,7 @@ function now(): number {
 }
 
 /**
- * Authorization server for MCP clients. Rukh ENT issues its own codes and
+ * Authorization server for MCP clients. Alegria issues its own codes and
  * tokens; who the user is still comes only from the ENT login.
  */
 @Injectable()
@@ -78,7 +78,7 @@ export class OAuthProvider implements OAuthServerProvider {
         'sha256',
         config.get<string>('SESSION_SECRET'),
         '',
-        'rukh-ent mcp pending authorization',
+        'alegria mcp pending authorization',
         32,
       ),
     );

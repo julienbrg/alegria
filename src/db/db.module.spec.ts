@@ -63,7 +63,7 @@ describe('openDatabase', () => {
     });
 
     it('creates the directory, uses WAL and reopens without migrating again', () => {
-      const path = join(dir, 'nested', 'rukh-ent.db');
+      const path = join(dir, 'nested', 'alegria.db');
       db = openDatabase(path);
       expect(db.pragma('journal_mode', { simple: true })).toBe('wal');
       db.close();

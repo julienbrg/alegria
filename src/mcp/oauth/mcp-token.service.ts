@@ -53,7 +53,7 @@ export class McpTokenService {
         'sha256',
         config.get<string>('SESSION_SECRET'),
         '',
-        'rukh-ent mcp access token',
+        'alegria mcp access token',
         32,
       ),
     );
