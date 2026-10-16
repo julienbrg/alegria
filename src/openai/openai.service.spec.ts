@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OpenAIService } from './openai.service';
 import { ConfigService } from '@nestjs/config';
 import { FinalStreamEvent, ModelStreamEvent } from '../types/llm-stream';
+import { historyDatabase } from '../providers/testing';
 
 /** Serializes chunks as an SSE body the service can read back. */
 const sseBody = (chunks: unknown[]) =>
@@ -36,6 +37,7 @@ describe('OpenAIService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        historyDatabase(),
         OpenAIService,
         {
           provide: ConfigService,

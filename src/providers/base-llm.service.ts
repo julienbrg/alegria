@@ -1,5 +1,7 @@
-import { HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { CustomJsonMemory } from '../memory/custom-memory';
+import { HttpException, HttpStatus, Inject, Logger } from '@nestjs/common';
+import type Database from 'better-sqlite3';
+import { DATABASE } from '../db/db.module';
+import { ConversationMemory } from '../memory/conversation-memory';
 import { ModelStreamEvent, StreamCost } from '../types/llm-stream';
 import { LlmProvider, LlmResponse, TokenRates } from './llm-provider';
 
@@ -25,6 +27,8 @@ export abstract class BaseLlmService implements LlmProvider {
   protected abstract readonly apiKey?: string;
   /** Display name used in logs and error messages, e.g. `OpenAI`. */
   protected abstract readonly displayName: string;
+
+  @Inject(DATABASE) protected readonly db: Database.Database;
 
   abstract processMessage(
     message: string,
@@ -60,9 +64,12 @@ export abstract class BaseLlmService implements LlmProvider {
     return this.streamMessage(message, sessionId, systemPrompt, signal);
   }
 
+  protected memory(sessionId: string): ConversationMemory {
+    return new ConversationMemory(this.db, sessionId);
+  }
+
   async getConversationHistory(sessionId: string) {
-    const memory = new CustomJsonMemory(sessionId);
-    const { history } = await memory.loadMemoryVariables();
+    const { history } = await this.memory(sessionId).loadMemoryVariables();
     return {
       history,
       isFirstMessage: history.length === 0,
@@ -70,13 +77,7 @@ export abstract class BaseLlmService implements LlmProvider {
   }
 
   async deleteConversation(sessionId: string): Promise<boolean> {
-    const memory = new CustomJsonMemory(sessionId);
-    const { history } = await memory.loadMemoryVariables();
-    if (history.length > 0) {
-      await memory.saveContext({ input: '' }, { response: '' });
-      return true;
-    }
-    return false;
+    return this.memory(sessionId).clear();
   }
 
   /**

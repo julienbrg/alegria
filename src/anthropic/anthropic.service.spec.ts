@@ -4,6 +4,7 @@ import { AnthropicService } from './anthropic.service';
 import { ConfigService } from '@nestjs/config';
 import { HttpException, Logger } from '@nestjs/common';
 import { FinalStreamEvent, ModelStreamEvent } from '../types/llm-stream';
+import { historyDatabase } from '../providers/testing';
 
 /** Serializes objects as an SSE body the service can read back. */
 const sseBody = (events: Record<string, unknown>[]) =>
@@ -53,6 +54,7 @@ describe('AnthropicService', () => {
       .mockImplementation(() => {});
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        historyDatabase(),
         AnthropicService,
         {
           provide: ConfigService,

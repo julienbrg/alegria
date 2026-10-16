@@ -5,6 +5,7 @@ import { MistralService } from './mistral.service';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FinalStreamEvent } from '../types/llm-stream';
+import { historyDatabase } from '../providers/testing';
 
 // Mock the ChatMistralAI
 vi.mock('@langchain/mistralai', () => {
@@ -23,44 +24,6 @@ vi.mock('@langchain/mistralai', () => {
   };
 });
 
-// Mock CustomJsonMemory so tests don't hit the real filesystem
-vi.mock('../memory/custom-memory', () => {
-  const messages: {
-    role: string;
-    content: string;
-    timestamp: number;
-    sessionId: string;
-  }[] = [];
-
-  return {
-    CustomJsonMemory: vi.fn().mockImplementation(function (sessionId: string) {
-      return {
-        loadMemoryVariables: vi.fn().mockResolvedValue({
-          history: messages.filter((msg) => msg.sessionId === sessionId),
-        }),
-        saveContext: vi
-          .fn()
-          .mockImplementation(
-            async (input: { input: string }, output: { response: string }) => {
-              messages.push({
-                role: 'user',
-                content: input.input,
-                timestamp: Date.now(),
-                sessionId,
-              });
-              messages.push({
-                role: 'assistant',
-                content: output.response,
-                timestamp: Date.now(),
-                sessionId,
-              });
-            },
-          ),
-      };
-    }),
-  };
-});
-
 const configWithKey = (key: string | undefined) =>
   ({ get: vi.fn(() => key) }) as unknown as ConfigService;
 
@@ -70,6 +33,7 @@ describe('MistralService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        historyDatabase(),
         MistralService,
         { provide: ConfigService, useValue: configWithKey('test-api-key') },
       ],
@@ -123,7 +87,10 @@ describe('MistralService', () => {
       .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => undefined);
 
-    const rateLimited = new MistralService(configWithKey('test-api-key'));
+    const rateLimited = Object.assign(
+      new MistralService(configWithKey('test-api-key')),
+      { db: historyDatabase().useValue },
+    );
 
     await expect(
       (async () => {

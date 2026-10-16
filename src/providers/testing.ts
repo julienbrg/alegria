@@ -1,4 +1,17 @@
+import type { ValueProvider } from '@nestjs/common';
+import type Database from 'better-sqlite3';
+import { DATABASE, openDatabase } from '../db/db.module';
 import { LlmProvider } from './llm-provider';
+
+/**
+ * `DATABASE` for a provider service under test, with foreign keys off so
+ * history can be saved for sessions no conversation row owns.
+ */
+export function historyDatabase(): ValueProvider<Database.Database> {
+  const db = openDatabase(':memory:');
+  db.pragma('foreign_keys = OFF');
+  return { provide: DATABASE, useValue: db };
+}
 
 /**
  * Gives a mocked provider service the {@link LlmProvider} surface, routing
