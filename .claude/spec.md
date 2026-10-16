@@ -536,14 +536,15 @@ The `/ask` handler sets `askDto.sessionId` from this service before calling the 
 
 ### Rate limiting
 
-The upstream [throttler](https://docs.nestjs.com/security/rate-limiting) tracks by IP. Students of one school often share an IP, so the fork tracks by user and reads its limits from the environment.
+The upstream [throttler](https://docs.nestjs.com/security/rate-limiting) tracks by IP, in memory. Students of one school often share an IP, so the fork counts questions per ENT user and Paris calendar day, in SQLite, with a limit per profile read from the environment.
 
-```ts
-// src/throttler.guard.ts
-protected async getTracker(req: Request & { user?: SessionUser }): Promise<string> {
-  return req.user?.id ?? req.ip;
-}
+```sql
+INSERT INTO ask_quota (user_id, day, count) VALUES (?, ?, 1)
+ON CONFLICT (user_id, day) DO UPDATE SET count = count + 1
+WHERE count < ?
 ```
+
+No row changed means the limit is reached: `/ask` answers `429`, with `Retry-After` set to the seconds left until midnight in Paris. The check runs after the visibility check, so a `404` costs nothing. Counts survive a restart, and every entry point that asks a model shares them.
 
 ### Query log
 
@@ -853,7 +854,7 @@ SESSION_IDLE_SECONDS=1800
 SESSION_MAX_SECONDS=28800
 
 # Limits
-THROTTLE_ASK_LIMIT=60           # per user, per hour
+ASK_DAILY_LIMITS=Student:30,Parent:30,Personnel:100,Teacher:100  # per user and day
 IMPORT_MAX_BYTES=20971520
 
 # Providers (upstream)

@@ -50,10 +50,11 @@ The code lives in [`src/ent/ent.controller.ts`](../src/ent/ent.controller.ts) an
 | `MISTRAL_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `DEEPSEEK_API_KEY` | per model | Keys for the providers behind `ENT_ALLOWED_MODELS`. A provider without a key is skipped. Mistral also selects the documents sent with each question; without its key, every document is sent |
 | `ANTHROPIC_EFFORT` | no | Effort level passed to Anthropic models |
 | `DB_PATH` | no | SQLite file, `data/alegria.db` by default |
+| `ASK_DAILY_LIMITS` | no | Questions per user and Paris day, by profile, such as `Student:30,Teacher:100`; an unlisted profile is unlimited. Past the limit, `/ask` answers `429` with `Retry-After` |
 | `SWAGGER_ENABLED` | no | Swagger UI at `/api`, unprotected; keep `false` in production |
 | `MCP_ENABLED`, `MCP_ROLES`, `MCP_TOKEN_SECONDS` | no | See [MCP](#mcp_roles) |
 
-`THROTTLE_ASK_LIMIT` and `IMPORT_MAX_BYTES` are validated but not used yet; they are reserved for the `/ask` rate limit and document import.
+`IMPORT_MAX_BYTES` is validated but not used yet; it is reserved for document import.
 
 ### Try it locally
 
