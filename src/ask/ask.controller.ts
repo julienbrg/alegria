@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   HttpCode,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Res,
@@ -17,6 +19,7 @@ import { ConversationService } from '../ent/conversation.service';
 import { CurrentUser } from '../ent/current-user.decorator';
 import type { EntUser } from '../ent/session.service';
 import { AskDto } from './ask.dto';
+import { AskQuotaService } from './ask-quota.service';
 import { AskRequest } from './ask-request';
 import { AskResponseDto } from './ask-response.dto';
 import { AskService } from './ask.service';
@@ -40,6 +43,7 @@ export class AskController {
     private readonly conversations: ConversationService,
     private readonly askService: AskService,
     private readonly askStreamService: AskStreamService,
+    private readonly quota: AskQuotaService,
     config: ConfigService,
   ) {
     this.models = allowedModels(config);
@@ -50,6 +54,7 @@ export class AskController {
   @ApiResponse({ status: 201, type: AskResponseDto })
   @ApiResponse({ status: 400, description: 'Model no longer allowed' })
   @ApiResponse({ status: 404, description: 'Unknown or hidden assistant' })
+  @ApiResponse({ status: 429, description: 'Daily question limit reached' })
   async ask(
     @CurrentUser() user: EntUser,
     @Body() askDto: AskDto,
@@ -62,6 +67,11 @@ export class AskController {
       throw new BadRequestException(
         `model ${assistant.model} is no longer allowed on this instance`,
       );
+    }
+    const refusal = this.quota.consume(user);
+    if (refusal) {
+      res.setHeader('Retry-After', String(refusal.retryAfter));
+      throw new HttpException(refusal.message, HttpStatus.TOO_MANY_REQUESTS);
     }
 
     const request: AskRequest = {

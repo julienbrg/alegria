@@ -6,6 +6,7 @@ import { ProvidersModule } from '../providers/providers.module';
 import { RagModule } from '../rag/rag.module';
 import { AskController } from './ask.controller';
 import { AskPreparationService } from './ask-preparation.service';
+import { AskQuotaService } from './ask-quota.service';
 import { AskResultService } from './ask-result.service';
 import { AskService } from './ask.service';
 import { AskStreamService } from './ask-stream.service';
@@ -18,6 +19,7 @@ import { ContextLoaderService } from './context-loader.service';
     AskService,
     AskStreamService,
     AskPreparationService,
+    AskQuotaService,
     AskResultService,
     ContextLoaderService,
     CostTracker,
