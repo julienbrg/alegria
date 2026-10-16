@@ -84,6 +84,7 @@ describe('Ask', () => {
       ENT_ALLOWED_MODELS: 'anthropic,mistral',
       ANTHROPIC_API_KEY: 'test',
       MISTRAL_API_KEY: 'test',
+      ASK_DAILY_LIMITS: 'Student:100,Parent:2',
     });
 
     // Same module instances as the app: `bootApp` reset the registry
@@ -116,7 +117,7 @@ describe('Ask', () => {
       )
       .mockResolvedValue({ content: '[3]' });
 
-    for (const profile of ['teacher', 'student']) {
+    for (const profile of ['teacher', 'student', 'parent']) {
       jars[profile] = (await login(e2e.server, profile)).jar;
     }
     visible = await create(['3A']);
@@ -360,6 +361,30 @@ describe('Ask', () => {
       expect(existsSync(join(cwd, 'data', 'chat-history.json'))).toBe(false);
       expect(existsSync(join(cwd, 'data', 'costs.json'))).toBe(false);
     });
+  });
+
+  it('returns 429 once the daily limit is reached', async () => {
+    const school = await create([]);
+    for (let i = 0; i < 2; i++) {
+      await ask('parent', { context: school, message: 'hi' }).expect(201);
+    }
+
+    const res = await ask('parent', { context: school, message: 'hi' })
+      .expect(429)
+      .expect('Retry-After', /^\d+$/);
+    expect(res.body.message).toBe(
+      'Daily limit of 2 questions reached. It resets at midnight, Paris time.',
+    );
+    expect(anthropicAsk).toHaveBeenCalledTimes(2);
+    await ask('student', { context: school, message: 'hi' }).expect(201);
+  });
+
+  it('does not count a refused question', async () => {
+    const counts = () =>
+      db.prepare('SELECT sum(count) FROM ask_quota').pluck().get();
+    const before = counts();
+    await ask('student', { context: hidden, message: 'hi' }).expect(404);
+    expect(counts()).toBe(before);
   });
 
   it('returns 400 when the assistant model is no longer allowed', async () => {

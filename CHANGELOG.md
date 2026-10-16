@@ -49,9 +49,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Server-owned conversations: `/ask` keeps one session per user and assistant, created on first ask, so follow-up questions carry the history and a client-supplied `sessionId` has no effect
 - `DELETE /ask/conversation/:context` starts a new conversation with an assistant visible to the caller
 - `messages` and `usage` tables: conversation history and per-request model usage and cost move from `data/chat-history.json` and `data/costs.json` into `data/alegria.db`, so concurrent `/ask` calls on one conversation no longer lose a message. Messages are deleted with their conversation, and so with their assistant; usage rows keep their cost but lose the session and the message
+- Daily question limit per ENT user on `/ask`, set per profile with `ASK_DAILY_LIMITS` (`Student:30,Parent:30,Personnel:100,Teacher:100` by default; an unlisted profile is unlimited). Counts live in the `ask_quota` table and reset at midnight, Paris time. Past the limit, `/ask` answers `429` with `Retry-After` and a message saying when it resets
+- `.claude/CLAUDE.md` lists the official docs for the backend, storage, LLM and MCP, frontend, testing, tooling and domain, to check before guessing an API or option
 
 ### Changed
 
+- `ASK_DAILY_LIMITS` replaces the unused `THROTTLE_ASK_LIMIT`, which is now ignored
 - Project renamed from rukh-ent to Alegria: packages `alegria` and `alegria-web`, default `DB_PATH` `data/alegria.db` (rename an existing `data/rukh-ent.db` or set `DB_PATH`), MCP server name and HKDF labels (existing MCP tokens and pending authorizations become invalid), cookies `__Host-alegria*` (existing sessions are logged out), `ENT_CLIENT_ID` example `alegria`, GitHub links and docs
 - `main.ts` setup (Helmet, cookie parser, validation pipe) moved to `configureApp()` in `src/app.setup.ts`, shared with the e2e tests
 - License switched from LGPL-3.0-or-later to [AGPL-3.0-or-later](LICENSE)

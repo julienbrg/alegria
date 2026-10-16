@@ -11,6 +11,7 @@ import {
   MinLength,
   validateSync,
 } from 'class-validator';
+import { parseAskLimits } from './ask-limits';
 
 const BOOLEAN = ['true', 'false'];
 
@@ -60,9 +61,8 @@ export class EnvironmentVariables {
   @IsPositive()
   SESSION_MAX_SECONDS: number = 28800;
 
-  @IsInt()
-  @IsPositive()
-  THROTTLE_ASK_LIMIT: number = 60;
+  @IsString()
+  ASK_DAILY_LIMITS: string = 'Student:30,Parent:30,Personnel:100,Teacher:100';
 
   @IsInt()
   @IsPositive()
@@ -134,6 +134,12 @@ export function validate(
   );
   if (env.SESSION_IDLE_SECONDS > env.SESSION_MAX_SECONDS) {
     problems.push('SESSION_IDLE_SECONDS: must not exceed SESSION_MAX_SECONDS');
+  }
+
+  try {
+    parseAskLimits(env.ASK_DAILY_LIMITS);
+  } catch (error) {
+    problems.push(`ASK_DAILY_LIMITS: ${(error as Error).message}`);
   }
 
   if (env.ENT_MOCK === 'true' && env.NODE_ENV === 'production') {
