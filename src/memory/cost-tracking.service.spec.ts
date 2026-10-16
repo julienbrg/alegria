@@ -1,272 +1,178 @@
-import type { Mock } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { CostTracker } from './cost-tracking.service';
+import Database from 'better-sqlite3';
 import { Logger } from '@nestjs/common';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { writeFileAtomic } from '../storage/write-file-atomic';
-
-vi.mock('fs', () => ({
-  promises: {
-    access: vi.fn(),
-    readFile: vi.fn(),
-    mkdir: vi.fn(),
-  },
-}));
-
-vi.mock('../storage/write-file-atomic', () => ({
-  writeFileAtomic: vi.fn(),
-}));
+import { openDatabase } from '../db/db.module';
+import { CostTracker } from './cost-tracking.service';
 
 describe('CostTracker', () => {
+  let db: Database.Database;
   let service: CostTracker;
-  const mockDbPath = join(process.cwd(), 'data', 'costs.json');
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CostTracker],
-    }).compile();
+  const rows = () =>
+    db.prepare('SELECT * FROM usage ORDER BY id').all() as Record<
+      string,
+      unknown
+    >[];
 
-    service = module.get<CostTracker>(CostTracker);
-
-    // Suppress logger output in tests
-    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
-    vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+  beforeEach(() => {
     vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-    vi.spyOn(Logger.prototype, 'debug').mockImplementation(() => undefined);
-
-    // Reset all mocks
-    vi.clearAllMocks();
+    db = openDatabase(':memory:');
+    db.exec(`
+      INSERT INTO assistants (name, owner_id, uai, model) VALUES ('a', 'u1', '0590123A', 'mistral');
+      INSERT INTO conversations (user_id, assistant, session_id) VALUES ('u1', 'a', 's1');
+    `);
+    service = new CostTracker(db);
   });
 
   afterEach(() => {
+    db.close();
     vi.restoreAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('onModuleInit', () => {
-    it('should initialize successfully', async () => {
-      (fs.access as Mock).mockResolvedValue(undefined);
-      (fs.readFile as Mock).mockResolvedValue(
-        JSON.stringify({
-          requests: [],
-          global: {
-            totalInputCost: 0,
-            totalOutputCost: 0,
-            totalCost: 0,
-            totalInputTokens: 0,
-            totalOutputTokens: 0,
-            totalRequests: 0,
-            modelsUsage: {},
-            lastUpdated: new Date().toISOString(),
-          },
-        }),
-      );
-
-      await service.onModuleInit();
-
-      expect(fs.access).toHaveBeenCalled();
-    });
-
-    it('should handle initialization errors', async () => {
-      (fs.access as Mock).mockRejectedValue(new Error('File error'));
-
-      await service.onModuleInit();
-
-      // Service should still be defined even if initialization fails
-      expect(service).toBeDefined();
-    });
-  });
-
-  describe('ensureDataDirExists', () => {
-    it('should create data directory if it does not exist', async () => {
-      (fs.access as Mock).mockRejectedValue(new Error('Directory not found'));
-      (fs.mkdir as Mock).mockResolvedValue(undefined);
-
-      await service.ensureDataDirExists();
-
-      expect(fs.mkdir).toHaveBeenCalled();
-    });
-
-    it('should not create directory if it exists', async () => {
-      (fs.access as Mock).mockResolvedValue(undefined);
-
-      await service.ensureDataDirExists();
-
-      expect(fs.mkdir).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('loadData', () => {
-    it('should load existing data from file', async () => {
-      const mockData = {
-        requests: [],
-        global: {
-          totalInputCost: 0,
-          totalOutputCost: 0,
-          totalCost: 0,
-          totalInputTokens: 0,
-          totalOutputTokens: 0,
-          totalRequests: 0,
-          modelsUsage: {},
-          lastUpdated: new Date().toISOString(),
-        },
-      };
-
-      (fs.access as Mock).mockResolvedValue(undefined);
-      (fs.readFile as Mock).mockResolvedValue(JSON.stringify(mockData));
-
-      await service.loadData();
-
-      expect(fs.readFile).toHaveBeenCalledWith(mockDbPath, 'utf-8');
-    });
-
-    it('should create new data file if it does not exist', async () => {
-      (fs.access as Mock)
-        .mockResolvedValueOnce(undefined) // data dir exists
-        .mockRejectedValueOnce(new Error('File not found')); // file doesn't exist
-      (writeFileAtomic as Mock).mockResolvedValue(undefined);
-
-      await service.loadData();
-
-      expect(writeFileAtomic).toHaveBeenCalled();
-    });
-  });
-
-  describe('saveData', () => {
-    it('should save data to file', async () => {
-      (fs.access as Mock).mockResolvedValue(undefined);
-      (writeFileAtomic as Mock).mockResolvedValue(undefined);
-
-      await service.saveData();
-
-      expect(writeFileAtomic).toHaveBeenCalledWith(
-        mockDbPath,
-        expect.any(String),
-      );
-    });
-
-    it('should handle save errors', async () => {
-      (fs.access as Mock).mockResolvedValue(undefined);
-      (writeFileAtomic as Mock).mockRejectedValue(new Error('Write error'));
-
-      await service.saveData();
-
-      // Should not throw, just log error
-      expect(service).toBeDefined();
-    });
-  });
-
-  describe('estimateTokens', () => {
-    it('should estimate tokens correctly', () => {
-      const text = 'This is a test message';
-      const tokens = service.estimateTokens(text);
-
-      expect(tokens).toBeGreaterThan(0);
-      expect(tokens).toBe(Math.ceil(text.length / 4));
-    });
+  it('estimates tokens at four characters each', () => {
+    expect(service.estimateTokens('This is a test message')).toBe(6);
   });
 
   describe('trackUsageWithTokens', () => {
-    beforeEach(() => {
-      (fs.access as Mock).mockResolvedValue(undefined);
-      (writeFileAtomic as Mock).mockResolvedValue(undefined);
-    });
-
-    it('should track usage with provided tokens', async () => {
+    it('records tokens and cost at the model rate', async () => {
       await service.trackUsageWithTokens(
-        'user1',
+        'anonymous',
         'test message',
-        'session1',
-        'claude-3-7-sonnet-20250219',
-        'input text',
-        'output text',
-        100,
-        50,
+        's1',
+        'gpt-4o',
+        'input',
+        'output',
+        1000,
+        500,
       );
 
-      expect(writeFileAtomic).toHaveBeenCalled();
+      expect(rows()).toEqual([
+        expect.objectContaining({
+          session_id: 's1',
+          model: 'gpt-4o',
+          input_tokens: 1000,
+          output_tokens: 500,
+          input_cost: 0.0025,
+          output_cost: 0.005,
+          total_cost: 0.0075,
+          message: 'test message',
+        }),
+      ]);
     });
 
-    it('should estimate tokens if not provided', async () => {
+    it('estimates tokens when none are given', async () => {
       await service.trackUsageWithTokens(
-        'user1',
-        'test message',
-        'session1',
-        'claude-3-7-sonnet-20250219',
-        'input text',
-        'output text',
-        0,
-        0,
+        'anonymous',
+        '',
+        's1',
+        'gpt-4o',
+        'abcdefgh',
+        'abcd',
       );
 
-      expect(writeFileAtomic).toHaveBeenCalled();
+      expect(rows()[0]).toMatchObject({ input_tokens: 2, output_tokens: 1 });
     });
 
-    it('should use default rates for unknown model', async () => {
+    it('stores an empty message as NULL', async () => {
       await service.trackUsageWithTokens(
-        'user1',
-        'test message',
-        'session1',
+        'anonymous',
+        '',
+        's1',
+        'gpt-4o',
+        'i',
+        'o',
+        1,
+        1,
+      );
+
+      expect(rows()[0].message).toBeNull();
+    });
+
+    it('uses the default rates for an unknown model', async () => {
+      await service.trackUsageWithTokens(
+        'anonymous',
+        '',
+        's1',
         'unknown-model',
-        'input text',
-        'output text',
-        100,
-        50,
+        'i',
+        'o',
+        1000,
+        1000,
       );
 
-      expect(writeFileAtomic).toHaveBeenCalled();
+      expect(rows()[0].total_cost).toBe(0.09);
     });
 
-    it('should handle tracking errors', async () => {
-      (writeFileAtomic as Mock).mockRejectedValue(new Error('Write error'));
-
-      await service.trackUsageWithTokens(
-        'user1',
-        'test message',
-        'session1',
-        'claude-3-7-sonnet-20250219',
-        'input text',
-        'output text',
-        100,
-        50,
-      );
-
-      // Should not throw, just log error
-      expect(service).toBeDefined();
+    it('logs instead of throwing when the insert fails', async () => {
+      await expect(
+        service.trackUsageWithTokens(
+          'anonymous',
+          '',
+          'missing',
+          'gpt-4o',
+          'i',
+          'o',
+          1,
+          1,
+        ),
+      ).resolves.toBeUndefined();
+      expect(rows()).toEqual([]);
+      expect(Logger.prototype.error).toHaveBeenCalled();
     });
   });
 
-  describe('trackUsage', () => {
-    beforeEach(() => {
-      (fs.access as Mock).mockResolvedValue(undefined);
-      (writeFileAtomic as Mock).mockResolvedValue(undefined);
-    });
+  it('trackUsage estimates tokens from the texts', async () => {
+    await service.trackUsage('anonymous', '', 's1', 'gpt-4o', 'abcd', 'abcd');
 
-    it('should track usage with legacy method', async () => {
-      await service.trackUsage(
-        'user1',
-        'test message',
-        'session1',
-        'claude-3-7-sonnet-20250219',
-        'input text',
-        'output text',
-      );
-
-      expect(writeFileAtomic).toHaveBeenCalled();
-    });
+    expect(rows()[0]).toMatchObject({ input_tokens: 1, output_tokens: 1 });
   });
 
   describe('generateUsageReport', () => {
-    it('should generate usage report', async () => {
+    it('is empty with no usage', async () => {
       const report = await service.generateUsageReport();
 
-      expect(report).toBeDefined();
-      expect(report.requests).toBeDefined();
-      expect(report.global).toBeDefined();
+      expect(report.requests).toEqual([]);
+      expect(report.global).toMatchObject({
+        totalCost: 0,
+        totalRequests: 0,
+        modelsUsage: {},
+      });
+    });
+
+    it('sums usage overall and per model', async () => {
+      for (const model of ['gpt-4o', 'gpt-4o', 'claude-sonnet-5']) {
+        await service.trackUsageWithTokens(
+          'anonymous',
+          'q',
+          's1',
+          model,
+          'i',
+          'o',
+          1000,
+          1000,
+        );
+      }
+
+      const report = await service.generateUsageReport();
+
+      expect(report.requests).toHaveLength(3);
+      expect(report.requests[0]).toMatchObject({
+        sessionId: 's1',
+        model: 'gpt-4o',
+        message: 'q',
+        totalCost: 0.0125,
+      });
+      expect(report.global).toMatchObject({
+        totalInputTokens: 3000,
+        totalOutputTokens: 3000,
+        totalRequests: 3,
+      });
+      expect(report.global.totalCost).toBeCloseTo(0.037);
+      expect(report.global.modelsUsage['gpt-4o']).toMatchObject({
+        requests: 2,
+        inputTokens: 2000,
+        outputTokens: 2000,
+      });
+      expect(report.global.modelsUsage['gpt-4o'].cost).toBeCloseTo(0.025);
     });
   });
 });

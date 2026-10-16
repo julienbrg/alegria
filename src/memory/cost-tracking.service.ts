@@ -1,7 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { writeFileAtomic } from '../storage/write-file-atomic';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import Database from 'better-sqlite3';
+import { DATABASE } from '../db/db.module';
 
 export interface CostDatabase {
   requests: {
@@ -34,11 +33,10 @@ export interface CostDatabase {
   };
 }
 
+/** Per-request model usage and cost, in the `usage` table. */
 @Injectable()
-export class CostTracker implements OnModuleInit {
+export class CostTracker {
   private readonly logger = new Logger(CostTracker.name);
-  private readonly dbPath: string;
-  private data: CostDatabase;
 
   // Cost per 1K tokens in USD, per model. Rates verified 2026-09-11 against
   // https://mistral.ai/pricing/api, https://developers.openai.com/api/docs/pricing
@@ -113,106 +111,14 @@ export class CostTracker implements OnModuleInit {
     },
   };
 
-  constructor() {
-    this.dbPath = join(process.cwd(), 'data', 'costs.json');
-    this.data = {
-      requests: [],
-      global: {
-        totalInputCost: 0,
-        totalOutputCost: 0,
-        totalCost: 0,
-        totalInputTokens: 0,
-        totalOutputTokens: 0,
-        totalRequests: 0,
-        modelsUsage: {},
-        lastUpdated: new Date().toISOString(),
-      },
-    };
-  }
-
-  async onModuleInit() {
-    try {
-      await this.loadData();
-      this.logger.log('Cost tracking database initialized successfully');
-    } catch (error) {
-      this.logger.error('Failed to initialize cost tracking database:', error);
-    }
-  }
-
-  async ensureDataDirExists() {
-    try {
-      // Create data directory if it doesn't exist
-      const dataDir = join(process.cwd(), 'data');
-      try {
-        await fs.access(dataDir);
-        this.logger.debug('Data directory exists');
-      } catch {
-        this.logger.debug('Creating data directory');
-        await fs.mkdir(dataDir, { recursive: true });
-      }
-    } catch (error) {
-      this.logger.error('Failed to ensure data directory exists:', error);
-    }
-  }
-
-  async loadData() {
-    try {
-      await this.ensureDataDirExists();
-
-      try {
-        await fs.access(this.dbPath);
-        const content = await fs.readFile(this.dbPath, 'utf-8');
-
-        this.data = JSON.parse(content);
-        this.logger.debug('Successfully loaded costs data from file');
-      } catch {
-        this.logger.warn('Creating new costs data file');
-        // Use default data structure
-        this.data = {
-          requests: [],
-          global: {
-            totalInputCost: 0,
-            totalOutputCost: 0,
-            totalCost: 0,
-            totalInputTokens: 0,
-            totalOutputTokens: 0,
-            totalRequests: 0,
-            modelsUsage: {},
-            lastUpdated: new Date().toISOString(),
-          },
-        };
-        await this.saveData();
-        this.logger.debug('Created new costs data file');
-      }
-    } catch (error) {
-      this.logger.error('Failed to load costs data:', error);
-    }
-  }
-
-  async saveData(): Promise<void> {
-    try {
-      await this.ensureDataDirExists();
-
-      const dataStr = JSON.stringify(this.data, null, 2);
-      this.logger.debug(`Writing data to ${this.dbPath}`);
-      await writeFileAtomic(this.dbPath, dataStr);
-      this.logger.debug('Successfully saved costs data');
-    } catch (error) {
-      this.logger.error('Failed to save costs data:', error);
-      // Try to log the data structure for debugging
-      try {
-        this.logger.debug('Current data structure:', JSON.stringify(this.data));
-      } catch {
-        this.logger.error('Could not stringify data for debug logging');
-      }
-    }
-  }
+  constructor(@Inject(DATABASE) private readonly db: Database.Database) {}
 
   estimateTokens(text: string): number {
     // Rough estimate: 1 token ≈ 4 characters for English text
     return Math.ceil(text.length / 4);
   }
 
+  /** An empty `message` is stored as NULL. */
   async trackUsageWithTokens(
     _walletAddress: string,
     message: string,
@@ -224,27 +130,17 @@ export class CostTracker implements OnModuleInit {
     outputTokens: number = 0,
   ): Promise<void> {
     try {
-      this.logger.debug(`Tracking usage for model: ${modelName}`);
-
-      // If token counts are zero or invalid, use estimates
       if (!inputTokens || inputTokens <= 0) {
         inputTokens = this.estimateTokens(inputText);
-        this.logger.debug(`Using estimated input tokens: ${inputTokens}`);
       }
-
       if (!outputTokens || outputTokens <= 0) {
         outputTokens = this.estimateTokens(outputText);
-        this.logger.debug(`Using estimated output tokens: ${outputTokens}`);
       }
 
-      // Make sure we have proper model rates
       const modelRates = this.COST_RATES[modelName] || {
         inputCost: 0.015,
         outputCost: 0.075,
       };
-      this.logger.debug(`Using model rates: ${JSON.stringify(modelRates)}`);
-
-      // Calculate costs based on token counts
       const inputCost = Number(
         ((inputTokens / 1000) * modelRates.inputCost).toFixed(6),
       );
@@ -253,70 +149,28 @@ export class CostTracker implements OnModuleInit {
       );
       const totalCost = Number((inputCost + outputCost).toFixed(6));
 
-      this.logger.debug(
-        `Calculated costs: input=$${inputCost}, output=$${outputCost}, total=$${totalCost}`,
-      );
-
-      // Add request to history
-      this.data.requests.push({
-        timestamp: new Date().toISOString(),
-        inputCost,
-        outputCost,
-        totalCost,
-        inputTokens,
-        outputTokens,
-        message,
-        sessionId,
-        model: modelName,
-      });
-
-      // Update global totals
-      this.data.global.totalInputCost += inputCost;
-      this.data.global.totalOutputCost += outputCost;
-      this.data.global.totalCost += totalCost;
-      this.data.global.totalInputTokens += inputTokens;
-      this.data.global.totalOutputTokens += outputTokens;
-      this.data.global.totalRequests += 1;
-      this.data.global.lastUpdated = new Date().toISOString();
-
-      // Initialize modelsUsage if it doesn't exist
-      if (!this.data.global.modelsUsage) {
-        this.data.global.modelsUsage = {};
-      }
-
-      // Update model-specific usage statistics
-      if (!this.data.global.modelsUsage[modelName]) {
-        this.data.global.modelsUsage[modelName] = {
-          requests: 0,
-          inputTokens: 0,
-          outputTokens: 0,
-          cost: 0,
-        };
-      }
-
-      const modelStats = this.data.global.modelsUsage[modelName];
-      modelStats.requests += 1;
-      modelStats.inputTokens += inputTokens;
-      modelStats.outputTokens += outputTokens;
-      modelStats.cost += totalCost;
-
-      // Save the updated data
-      await this.saveData();
+      this.db
+        .prepare(
+          `INSERT INTO usage (session_id, model, input_tokens, output_tokens,
+                              input_cost, output_cost, total_cost, message)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          sessionId,
+          modelName,
+          inputTokens,
+          outputTokens,
+          inputCost,
+          outputCost,
+          totalCost,
+          message || null,
+        );
 
       this.logger.debug(
-        `Successfully tracked usage with ${modelName}: $${totalCost.toFixed(6)} (${inputTokens} input tokens, ${outputTokens} output tokens)`,
+        `Tracked usage with ${modelName}: $${totalCost.toFixed(6)} (${inputTokens} input tokens, ${outputTokens} output tokens)`,
       );
     } catch (error) {
       this.logger.error('Error tracking usage:', error);
-      // Try to log the state for debugging
-      try {
-        this.logger.debug(
-          'Data state before error:',
-          JSON.stringify(this.data),
-        );
-      } catch {
-        this.logger.error('Could not stringify data for error logging');
-      }
     }
   }
 
@@ -346,9 +200,45 @@ export class CostTracker implements OnModuleInit {
     );
   }
 
-  // Simple report that returns the exact format requested
+  /** Every request, oldest first, with totals overall and per model. */
   async generateUsageReport(): Promise<CostDatabase> {
-    // Return a direct reference to our data structure
-    return this.data;
+    const requests = this.db
+      .prepare(
+        `SELECT timestamp, input_cost AS inputCost, output_cost AS outputCost,
+                total_cost AS totalCost, input_tokens AS inputTokens,
+                output_tokens AS outputTokens, coalesce(message, '') AS message,
+                coalesce(session_id, '') AS sessionId, model
+         FROM usage ORDER BY id`,
+      )
+      .all() as CostDatabase['requests'];
+
+    const totals = this.db
+      .prepare(
+        `SELECT coalesce(sum(input_cost), 0) AS totalInputCost,
+                coalesce(sum(output_cost), 0) AS totalOutputCost,
+                coalesce(sum(total_cost), 0) AS totalCost,
+                coalesce(sum(input_tokens), 0) AS totalInputTokens,
+                coalesce(sum(output_tokens), 0) AS totalOutputTokens,
+                count(*) AS totalRequests,
+                coalesce(max(timestamp), strftime('%Y-%m-%dT%H:%M:%fZ')) AS lastUpdated
+         FROM usage`,
+      )
+      .get() as Omit<CostDatabase['global'], 'modelsUsage'>;
+
+    const modelsUsage: CostDatabase['global']['modelsUsage'] = {};
+    for (const row of this.db
+      .prepare(
+        `SELECT model, count(*) AS requests, sum(input_tokens) AS inputTokens,
+                sum(output_tokens) AS outputTokens, sum(total_cost) AS cost
+         FROM usage GROUP BY model`,
+      )
+      .all() as ({
+      model: string;
+    } & CostDatabase['global']['modelsUsage'][string])[]) {
+      const { model, ...stats } = row;
+      modelsUsage[model] = stats;
+    }
+
+    return { requests, global: { ...totals, modelsUsage } };
   }
 }
