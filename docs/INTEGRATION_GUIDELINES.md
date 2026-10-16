@@ -42,7 +42,7 @@ The code lives in [`src/ent/ent.controller.ts`](../src/ent/ent.controller.ts) an
 | `ENT_REDIRECT_URI` | yes | `https://<your domain>/auth/callback` |
 | `ENT_USERINFO_VERSION` | no | `userinfo` API version, `2.0` by default |
 | `ENT_ALLOWED_MODELS` | no | Comma-separated models teachers may pick, among `mistral`, `anthropic`, `anthropic-web-search`, `openai` and `deepseek` |
-| `ENT_LOG_QUERIES` | no | `true` keeps the message in each context's query log and in `data/costs.json`; `false` by default keeps the timestamp and files used |
+| `ENT_LOG_QUERIES` | no | `true` keeps the message in each context's query log and in the `usage` table; `false` by default keeps the timestamp and files used |
 | `ENT_MOCK` | no | `true` serves a fake ENT at `/mock-ent`; development only |
 | `PUBLIC_ORIGIN` | yes | See [above](#public_origin) |
 | `SESSION_SECRET` | yes | Signs the session cookie; generate with `openssl rand -base64 48` |

@@ -40,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `oauth_clients` and `oauth_codes` tables; codes are single-use, stored hashed and expire after 60 seconds
 - `POST /ask`, ported from Rukh with its provider layer (Mistral, Anthropic, Anthropic with web search, OpenAI, DeepSeek), streaming as server-sent events and two-step selection of the context's Markdown files, with `instruction-file.md` always sent. It needs a session and an assistant visible to the caller (`404` otherwise), runs on the assistant's `model`, which must still be in `ENT_ALLOWED_MODELS` (`400` otherwise), and ignores a client `sessionId`: each call is a new conversation until conversations are owned by the server
 - A provider without an API key is skipped instead of stopping the server at startup
-- `ENT_LOG_QUERIES=false` by default: the context query log and `data/costs.json` keep the timestamp and files used, not the message
+- `ENT_LOG_QUERIES=false` by default: the context query log and usage records keep the timestamp and files used, not the message
 - `OPENAI_API_KEY`, `DEEPSEEK_API_KEY` and `ANTHROPIC_EFFORT` settings
 - `docs/RESOURCES.md`: GAR requirements for resource providers from the GAR contract (v2026), with Alegria's answer or what is missing for each, and links to the GAR documentation
 - `next` parameter on `/auth/login`: a same-origin path to land on after login
@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `docs/TARGET_WORKFLOWS.md`: the three target ways in, from the ENT, an LLM connector (Claude, Le Chat, ChatGPT) and a custom frontend, step by step for students and teachers, with expiry, data flow, a comparison table, a possible future mobile app, open design points and links to the tracking issues; linked from the README
 - Server-owned conversations: `/ask` keeps one session per user and assistant, created on first ask, so follow-up questions carry the history and a client-supplied `sessionId` has no effect
 - `DELETE /ask/conversation/:context` starts a new conversation with an assistant visible to the caller
+- `messages` and `usage` tables: conversation history and per-request model usage and cost move from `data/chat-history.json` and `data/costs.json` into `data/alegria.db`, so concurrent `/ask` calls on one conversation no longer lose a message. Messages are deleted with their conversation, and so with their assistant; usage rows keep their cost but lose the session and the message
 
 ### Changed
 

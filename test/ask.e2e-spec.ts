@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -22,6 +23,8 @@ describe('Ask', () => {
   let anthropicAsk: MockInstance<LlmProvider['ask']>;
   let mistralAsk: MockInstance<LlmProvider['ask']>;
   let selection: MockInstance;
+  let anthropic: LlmProvider;
+  let db: Database.Database;
 
   const ask = (profile: string | null, body: Record<string, unknown>) => {
     const req = request(e2e.server).post('/ask').set('Origin', e2e.origin);
@@ -87,7 +90,9 @@ describe('Ask', () => {
     const { ProviderRegistry } =
       await import('../src/providers/provider-registry.service');
     const registry = e2e.app.get(ProviderRegistry);
-    const anthropic = registry.get('anthropic');
+    anthropic = registry.get('anthropic');
+    const { DATABASE } = await import('../src/db/db.module');
+    db = e2e.app.get<Database.Database>(DATABASE);
     const mistral = registry.get('mistral');
     anthropicAsk = vi.spyOn(anthropic, 'ask');
     mistralAsk = vi.spyOn(mistral, 'ask');
@@ -277,12 +282,91 @@ describe('Ask', () => {
     ]);
   });
 
+  describe('history and usage', () => {
+    let fetchSpy: MockInstance;
+
+    const sessionOf = (profile: string, name: string) =>
+      db
+        .prepare(
+          'SELECT session_id FROM conversations WHERE user_id = ? AND assistant = ?',
+        )
+        .pluck()
+        .get(profile, name) as string;
+    const count = (table: string, sessionId: string) =>
+      db
+        .prepare(`SELECT count(*) FROM ${table} WHERE session_id = ?`)
+        .pluck()
+        .get(sessionId);
+
+    beforeEach(() => {
+      // Through the real provider, so the turn is saved; only the model call is faked
+      anthropicAsk.mockImplementation((message, sessionId, systemPrompt) =>
+        (
+          anthropic as unknown as { processMessage: LlmProvider['ask'] }
+        ).processMessage(message, sessionId, systemPrompt),
+      );
+      fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+        Response.json({
+          content: [{ type: 'text', text: 'Bonjour' }],
+          usage: { input_tokens: 1, output_tokens: 1 },
+          stop_reason: 'end_turn',
+        }),
+      );
+    });
+
+    afterEach(() => {
+      fetchSpy.mockRestore();
+    });
+
+    it('keeps every message of concurrent asks', async () => {
+      const name = await create(['3A']);
+
+      await Promise.all(
+        Array.from({ length: 5 }, (_, i) =>
+          ask('student', { context: name, message: `q${i}` }).expect(201),
+        ),
+      );
+
+      const sessionId = sessionOf('mock-student-0001', name);
+      expect(count('messages', sessionId)).toBe(10);
+      expect(count('usage', sessionId)).toBe(5);
+    });
+
+    it('deletes the messages with the assistant, keeping the cost', async () => {
+      const name = await create(['3A']);
+      await ask('student', { context: name, message: 'hi' }).expect(201);
+      const sessionId = sessionOf('mock-student-0001', name);
+      expect(count('messages', sessionId)).toBe(2);
+
+      await request(e2e.server)
+        .delete(`/context/${name}`)
+        .set('Cookie', jars.teacher.header())
+        .set('Origin', e2e.origin)
+        .expect(204);
+
+      expect(count('messages', sessionId)).toBe(0);
+      expect(count('usage', sessionId)).toBe(0);
+      expect(
+        db
+          .prepare('SELECT count(*) FROM usage WHERE session_id IS NULL')
+          .pluck()
+          .get(),
+      ).toBeGreaterThan(0);
+    });
+
+    it('writes no JSON store', async () => {
+      await ask('student', { context: visible, message: 'hi' }).expect(201);
+
+      expect(existsSync(join(cwd, 'data', 'chat-history.json'))).toBe(false);
+      expect(existsSync(join(cwd, 'data', 'costs.json'))).toBe(false);
+    });
+  });
+
   it('returns 400 when the assistant model is no longer allowed', async () => {
-    const { DATABASE } = await import('../src/db/db.module');
-    e2e.app
-      .get<Database.Database>(DATABASE)
-      .prepare('UPDATE assistants SET model = ? WHERE name = ?')
-      .run('openai', visible);
+    db.prepare('UPDATE assistants SET model = ? WHERE name = ?').run(
+      'openai',
+      visible,
+    );
 
     await ask('student', { context: visible, message: 'hi' }).expect(400);
     expect(anthropicAsk).not.toHaveBeenCalled();

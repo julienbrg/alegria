@@ -823,7 +823,7 @@ sudo systemctl restart alegria
 
 ### Data and backups
 
-Everything lives under `data/`: `alegria.db` (assistants and conversations), `contexts/` and `chat-history.json`. The database runs in [WAL mode](https://sqlite.org/wal.html), so copying the file while the service writes can produce a corrupt backup. Snapshot it first with SQLite's [online backup](https://sqlite.org/backup.html), then back the directory up daily to storage outside the VPS, encrypted, for example with [restic](https://restic.net/). Test a restore before the pilot.
+Everything lives under `data/`: `alegria.db` (assistants, conversations, their messages and usage) and `contexts/`. The database runs in [WAL mode](https://sqlite.org/wal.html), so copying the file while the service writes can produce a corrupt backup. Snapshot it first with SQLite's [online backup](https://sqlite.org/backup.html), then back the directory up daily to storage outside the VPS, encrypted, for example with [restic](https://restic.net/). Test a restore before the pilot.
 
 ```bash
 sqlite3 /srv/alegria/data/alegria.db ".backup /srv/alegria/data/backup/alegria.db"
@@ -832,7 +832,7 @@ restic backup /srv/alegria/data --exclude /srv/alegria/data/alegria.db*
 
 Migrations are numbered `.sql` files in `src/db/migrations/`, tracked with `PRAGMA user_version` and applied at startup in one transaction: a failed migration stops the service and leaves the database as it was.
 
-A single `chat-history.json` holds every conversation. Measure it under load; if it does not hold, split it per session before changing anything else.
+Messages are rows of the `messages` table, deleted with their conversation, so with their assistant too. Each model request adds a `usage` row with its tokens and cost, and the message only with `ENT_LOG_QUERIES=true`; when the conversation is deleted, the row keeps its cost and loses its session and message.
 
 ## Configuration
 

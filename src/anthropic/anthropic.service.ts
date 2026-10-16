@@ -1,7 +1,6 @@
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import { CustomJsonMemory } from '../memory/custom-memory';
 import {
   ModelStreamEvent,
   StreamAbortedError,
@@ -148,7 +147,7 @@ export class AnthropicService extends BaseLlmService {
   }> {
     this.requireApiKey();
     const requestId = this.generateRequestId();
-    const memory = new CustomJsonMemory(sessionId);
+    const memory = this.memory(sessionId);
 
     this.logger.log(
       `Processing message [${requestId}] for session [${sessionId}] with Anthropic`,
@@ -345,7 +344,7 @@ export class AnthropicService extends BaseLlmService {
   }> {
     this.requireApiKey();
     const requestId = this.generateRequestId();
-    const memory = new CustomJsonMemory(sessionId);
+    const memory = this.memory(sessionId);
 
     this.logger.log(
       `Processing message [${requestId}] for session [${sessionId}] with Anthropic (web search enabled)`,
@@ -618,7 +617,7 @@ export class AnthropicService extends BaseLlmService {
   ): AsyncGenerator<ModelStreamEvent> {
     this.requireApiKey();
     const requestId = this.generateRequestId();
-    const memory = new CustomJsonMemory(sessionId);
+    const memory = this.memory(sessionId);
 
     this.logger.log(
       `Streaming message [${requestId}] for session [${sessionId}] with Anthropic`,
@@ -906,7 +905,7 @@ export class AnthropicService extends BaseLlmService {
   ): AsyncGenerator<ModelStreamEvent> {
     this.requireApiKey();
     const requestId = this.generateRequestId();
-    const memory = new CustomJsonMemory(sessionId);
+    const memory = this.memory(sessionId);
 
     this.logger.log(
       `Streaming message [${requestId}] for session [${sessionId}] with Anthropic (web search enabled)`,

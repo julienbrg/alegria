@@ -38,6 +38,42 @@ describe('openDatabase', () => {
     );
   });
 
+  describe('when an assistant is deleted', () => {
+    beforeEach(() => {
+      db = openDatabase(':memory:');
+      db.exec(`
+        INSERT INTO assistants (name, owner_id, uai, model) VALUES ('a', 'u1', '0590123A', 'mistral');
+        INSERT INTO conversations (user_id, assistant, session_id) VALUES ('u2', 'a', 's1');
+        INSERT INTO messages (session_id, role, content, timestamp) VALUES ('s1', 'user', 'hi', 1);
+        INSERT INTO usage (session_id, model, input_tokens, output_tokens, input_cost, output_cost, total_cost, message)
+          VALUES ('s1', 'mistral', 1, 1, 0.1, 0.2, 0.3, 'hi');
+      `);
+      db.prepare("DELETE FROM assistants WHERE name = 'a'").run();
+    });
+
+    it('deletes its messages', () => {
+      expect(db.prepare('SELECT count(*) FROM messages').pluck().get()).toBe(0);
+    });
+
+    it('keeps the usage cost but forgets the message', () => {
+      expect(
+        db.prepare('SELECT session_id, message, total_cost FROM usage').get(),
+      ).toEqual({ session_id: null, message: null, total_cost: 0.3 });
+    });
+  });
+
+  it('refuses a message for an unknown session', () => {
+    db = openDatabase(':memory:');
+
+    expect(() =>
+      db
+        .prepare(
+          "INSERT INTO messages (session_id, role, content, timestamp) VALUES ('missing', 'user', 'hi', 1)",
+        )
+        .run(),
+    ).toThrow('FOREIGN KEY');
+  });
+
   it('refuses a conversation for an unknown assistant', () => {
     db = openDatabase(':memory:');
 

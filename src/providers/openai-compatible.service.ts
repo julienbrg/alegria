@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { CustomJsonMemory } from '../memory/custom-memory';
+import { ConversationMemory } from '../memory/conversation-memory';
 import {
   ModelStreamEvent,
   StreamAbortedError,
@@ -59,7 +59,7 @@ export abstract class OpenAICompatibleService extends BaseLlmService {
   }
 
   private async buildMessages(
-    memory: CustomJsonMemory,
+    memory: ConversationMemory,
     message: string,
     systemPrompt?: string,
   ): Promise<ChatMessage[]> {
@@ -158,7 +158,7 @@ export abstract class OpenAICompatibleService extends BaseLlmService {
     systemPrompt?: string,
   ): Promise<LlmResponse> {
     const requestId = this.generateRequestId();
-    const memory = new CustomJsonMemory(sessionId);
+    const memory = this.memory(sessionId);
 
     this.logger.log(
       `Processing message [${requestId}] for session [${sessionId}] with ${this.displayName}`,
@@ -241,7 +241,7 @@ export abstract class OpenAICompatibleService extends BaseLlmService {
     signal?: AbortSignal,
   ): AsyncGenerator<ModelStreamEvent> {
     const requestId = this.generateRequestId();
-    const memory = new CustomJsonMemory(sessionId);
+    const memory = this.memory(sessionId);
 
     this.logger.log(
       `Streaming message [${requestId}] for session [${sessionId}] with ${this.displayName}`,
