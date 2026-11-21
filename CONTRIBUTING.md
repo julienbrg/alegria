@@ -14,7 +14,7 @@ pnpm install
 cp .env.example .env
 ```
 
-The example config runs against the mock ENT, so you can sign in as a teacher, staff member, student, parent or super-admin without a real Edifice instance. See [Develop](README.md#develop) to run the API and the app.
+The example config runs against the mock ENT, so you can sign in as a teacher, staff member, student, parent or super-admin without a real Edifice instance. See [docs/GET_STARTED.md](docs/GET_STARTED.md) ([français](docs/GET_STARTED_FR.md)) to run the API and the app, sign in, and create and ask an assistant.
 
 ## Checks
 

@@ -4,6 +4,7 @@ Course assistants inside the [Edifice](https://edifice.io) ENT. Teachers create 
 
 - `src/` — NestJS backend: Edifice OAuth 2.0 login, session cookie, roles, SQLite storage, optional MCP endpoint
 - `web/` — Vite + React + Chakra UI app, served by Nest from `/` in production
+- [`docs/GET_STARTED.md`](docs/GET_STARTED.md) ([français](docs/GET_STARTED_FR.md)) — for new contributors: requirements, setup, a walkthrough against the mock ENT, and tests
 - `docs/RESOURCES.md` — legal constraints (cadre d'usage, GDPR, CNIL, AI Act), how Alegria meets them, and resources
 - `docs/INTEGRATION_GUIDELINES.md` — registering the connector with an ENT, its env vars, and how ENT profiles map to roles and how to change that
 - `docs/TEMPLATING.md` — existing Edifice starters, the generic parts of an ENT connector, and the shape of a reusable template
