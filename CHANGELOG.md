@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `messages` and `usage` tables: conversation history and per-request model usage and cost move from `data/chat-history.json` and `data/costs.json` into `data/alegria.db`, so concurrent `/ask` calls on one conversation no longer lose a message. Messages are deleted with their conversation, and so with their assistant; usage rows keep their cost but lose the session and the message
 - Daily question limit per ENT user on `/ask`, set per profile with `ASK_DAILY_LIMITS` (`Student:30,Parent:30,Personnel:100,Teacher:100` by default; an unlisted profile is unlimited). Counts live in the `ask_quota` table and reset at midnight, Paris time. Past the limit, `/ask` answers `429` with `Retry-After` and a message saying when it resets
 - `.claude/CLAUDE.md` lists the official docs for the backend, storage, LLM and MCP, frontend, testing, tooling and domain, to check before guessing an API or option
+- `docs/GET_STARTED.md` and its French version `docs/GET_STARTED_FR.md`: what Alegria is, requirements, setup, install, run and test for outside contributors, with a walkthrough against the mock ENT that creates, publishes and asks an assistant through Swagger UI. Linked from `README.md` and `CONTRIBUTING.md`
 
 ### Changed
 
